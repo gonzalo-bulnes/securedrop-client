@@ -32,7 +32,6 @@ from typing import NewType
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon, QKeyEvent, QPixmap
 from PyQt5.QtWidgets import (
-    QApplication,
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
@@ -60,8 +59,9 @@ class SDModalDialog(QDialog):
     MARGIN = 40
     NO_MARGIN = 0
 
-    def __init__(self, show_header: bool = True, intent: Intent = IntentDefault) -> None:
-        parent = QApplication.activeWindow()
+    def __init__(
+        self, show_header: bool = True, intent: Intent = IntentDefault, parent: QWidget = None
+    ) -> None:
         super().__init__(parent)
         self.setObjectName("ModalDialog")
         self.setModal(True)

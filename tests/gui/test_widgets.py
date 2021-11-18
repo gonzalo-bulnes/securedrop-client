@@ -3519,7 +3519,7 @@ def test_FileWidget__on_export_clicked(mocker, session, source):
     dialog = mocker.patch("securedrop_client.gui.widgets.ExportDialog")
 
     fw._on_export_clicked()
-    dialog.assert_called_once_with(controller, file.uuid, file.filename)
+    dialog.assert_called_once_with(controller, file.uuid, file.filename, parent=fw)
 
 
 def test_FileWidget__on_export_clicked_missing_file(mocker, session, source):
@@ -3567,7 +3567,7 @@ def test_FileWidget__on_print_clicked(mocker, session, source):
 
     fw._on_print_clicked()
 
-    dialog.assert_called_once_with(controller, file.uuid, file.filename)
+    dialog.assert_called_once_with(controller, file.uuid, file.filename, parent=fw)
 
 
 def test_FileWidget__on_print_clicked_missing_file(mocker, session, source):

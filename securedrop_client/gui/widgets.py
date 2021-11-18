@@ -2337,7 +2337,9 @@ class FileWidget(QWidget):
         if not self.controller.downloaded_file_exists(self.file):
             return
 
-        self.export_dialog = ExportDialog(self.controller, self.uuid, self.file.filename)
+        self.export_dialog = ExportDialog(
+            self.controller, self.uuid, self.file.filename, parent=self
+        )
         self.export_dialog.show()
 
     @pyqtSlot()
@@ -2348,7 +2350,7 @@ class FileWidget(QWidget):
         if not self.controller.downloaded_file_exists(self.file):
             return
 
-        dialog = PrintDialog(self.controller, self.uuid, self.file.filename)
+        dialog = PrintDialog(self.controller, self.uuid, self.file.filename, parent=self)
         dialog.exec()
 
     def _on_left_click(self) -> None:
@@ -2402,8 +2404,10 @@ class PrintDialog(SDModalDialog):
 
     FILENAME_WIDTH_PX = 260
 
-    def __init__(self, controller: Controller, file_uuid: str, file_name: str) -> None:
-        super().__init__()
+    def __init__(
+        self, controller: Controller, file_uuid: str, file_name: str, parent: QWidget = None
+    ) -> None:
+        super().__init__(parent=parent)
 
         self.controller = controller
         self.file_uuid = file_uuid
@@ -2531,8 +2535,10 @@ class ExportDialog(SDModalDialog):
     NO_MARGIN = 0
     FILENAME_WIDTH_PX = 260
 
-    def __init__(self, controller: Controller, file_uuid: str, file_name: str) -> None:
-        super().__init__()
+    def __init__(
+        self, controller: Controller, file_uuid: str, file_name: str, parent: QWidget = None
+    ) -> None:
+        super().__init__(parent=parent)
 
         self.controller = controller
         self.file_uuid = file_uuid
@@ -2782,8 +2788,8 @@ class ExportDialog(SDModalDialog):
 class DeleteSourceDialog(SDModalDialog):
     """Used to confirm deletion of source accounts."""
 
-    def __init__(self, source: Source, controller: Controller) -> None:
-        super().__init__(show_header=False, intent=SDModalDialog.IntentDestructive)
+    def __init__(self, source: Source, controller: Controller, parent: QWidget = None) -> None:
+        super().__init__(show_header=False, intent=SDModalDialog.IntentDestructive, parent=parent)
 
         self.source = source
         self.controller = controller
@@ -2832,8 +2838,8 @@ class DeleteConversationDialog(SDModalDialog):
     Shown to confirm deletion of all content in a source conversation.
     """
 
-    def __init__(self, source: Source, controller: Controller) -> None:
-        super().__init__(show_header=False)
+    def __init__(self, source: Source, controller: Controller, parent: QWidget = None) -> None:
+        super().__init__(show_header=False, parent=parent)
 
         self.source = source
         self.controller = controller
@@ -3751,7 +3757,7 @@ class DeleteSourceAction(QAction):
 
         super().__init__(self.text, parent)
 
-        self.confirmation_dialog = DeleteSourceDialog(self.source, self.controller)
+        self.confirmation_dialog = DeleteSourceDialog(self.source, self.controller, parent=parent)
         self.triggered.connect(self.trigger)
 
     def trigger(self) -> None:
@@ -3771,7 +3777,9 @@ class DeleteConversationAction(QAction):
 
         super().__init__(self.text, parent)
 
-        self.confirmation_dialog = DeleteConversationDialog(self.source, self.controller)
+        self.confirmation_dialog = DeleteConversationDialog(
+            self.source, self.controller, parent=parent
+        )
         self.triggered.connect(self.trigger)
 
     def trigger(self) -> None:
