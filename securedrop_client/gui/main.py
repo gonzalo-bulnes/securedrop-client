@@ -29,6 +29,8 @@ from PyQt5.QtWidgets import QAction, QApplication, QHBoxLayout, QMainWindow, QVB
 
 from securedrop_client import __version__
 from securedrop_client.db import Source, User
+
+from securedrop_client.gui.actions import DownloadAllFiles as DownloadAllFilesAction
 from securedrop_client.gui.auth import Dialog as LoginDialog
 from securedrop_client.gui.widgets import LeftPane, MainView, TopPane
 from securedrop_client.logic import Controller
@@ -96,6 +98,12 @@ class Window(QMainWindow):
         quit.setShortcut(QKeySequence.Quit)
         quit.triggered.connect(self.close)
         self.addAction(quit)
+
+        # TEMPORARY
+        download_all = DownloadAllFilesAction(source=None, parent=self, download=lambda type, uuid: print(f"Downloading {type} {uuid}"))
+        download_all.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_D))
+        download_all.triggered.connect(lambda: print("OK"))
+        self.addAction(download_all)
 
     def setup(self, controller: Controller) -> None:
         """

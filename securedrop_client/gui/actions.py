@@ -17,12 +17,35 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from gettext import gettext as _
-from typing import Type
+from typing import Callable, List, Type
 
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QAction, QDialog, QMenu
 
-from securedrop_client.db import Source
+from securedrop_client.db import File, Source
 from securedrop_client.logic import Controller
+
+
+class DownloadAllFiles(QAction):
+    def __init__(
+            self, source: Source, download: Callable[[File, str], None], parent: QMenu
+    ) -> None:
+        self._text = _("Download All")
+
+        super().__init__(self._text, parent)
+        self._source = source
+        self._download = download
+
+        self.triggered.connect(self._download_all_files)
+
+    @pyqtSlot()
+    def _download_all_files(self) -> None:
+        print("Downloading all files...")
+        for file in self._files():
+            self._download(File, file.uuid)
+
+    def _files(self) -> List[File]:
+        return []
 
 
 class DeleteSourceAction(QAction):
