@@ -52,16 +52,16 @@ class SvgToggleButton(QPushButton):
         layout.setSpacing(0)
 
         # Add SVG icon and set its size
-        self.icon = load_icon(normal=on, normal_off=off)
-        self.setIcon(self.icon)
+        self._icon = load_icon(normal=on, normal_off=off)
+        self.setIcon(self._icon)
         self.setIconSize(svg_size) if svg_size else self.setIconSize(QSize())
 
         # Make this a toggle button
         self.setCheckable(True)
 
     def set_icon(self, on: str, off: str) -> None:
-        self.icon = load_icon(normal=on, normal_off=off)
-        self.setIcon(self.icon)
+        self._icon = load_icon(normal=on, normal_off=off)
+        self.setIcon(self._icon)
 
 
 class SvgPushButton(QPushButton):
