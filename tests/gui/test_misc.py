@@ -12,6 +12,33 @@ from securedrop_client.gui import SecureQLabel, SvgLabel, SvgPushButton, SvgTogg
 app = QApplication([])
 
 
+class SvgLabelTest(unittest.TestCase):
+    def test_displays_no_text(self):
+        label = SvgLabel("error_icon.svg")
+        assert label.text() == ""
+
+    @unittest.skip("This seems like it should be the correct behavior.")
+    def test_adopts_the_specified_size(self):
+        label = SvgLabel(filename="error_icon.svg", svg_size=QSize(800, 600))
+        assert label.size() == QSize(800, 600)
+
+    def test_only_the_svg_adopts_the_specified_size(self):
+        label = SvgLabel(filename="error_icon.svg", svg_size=QSize(800, 600))
+        # The following assertion relies on an implementation detail.
+        assert label.svg.size() == QSize(800, 600)
+
+    def test_update_image_updates_the_svg_size(self):
+        label = SvgLabel(filename="error_icon.svg", svg_size=QSize(800, 600))
+        label.update_image(filename="error_icon.svg", svg_size=QSize(400, 300))
+        assert label.svg.size() == QSize(400, 300)
+
+    @unittest.skip("I don't know how to test this.")
+    def test_update_image_replaces_the_svg(self):
+        label = SvgLabel(filename="error_icon.svg", svg_size=QSize(800, 600))
+        label.update_image(filename="printer.svg")
+        assert False
+
+
 class SvgPushButtonTest(unittest.TestCase):
     def test_sets_an_icon(self):
         button = SvgPushButton("error_icon.svg")
@@ -61,40 +88,6 @@ class SvgToggleButtonTest(unittest.TestCase):
         )
         button.set_icon(on="printer.svg", off="printer.svg", svg_size=QSize(400, 300))
         assert button.icon().actualSize(QSize(1000, 1000)) == QSize(400, 300)
-
-
-def test_SvgLabel_init(mocker):
-    """
-    Ensure SvgLabel calls the expected methods correctly to set the icon and size.
-    """
-    svg_size = QSize(1, 1)
-    svg = mocker.MagicMock()
-    load_svg_fn = mocker.patch("securedrop_client.gui.misc.load_svg", return_value=svg)
-    mocker.patch("PyQt5.QtWidgets.QHBoxLayout.addWidget")
-
-    sl = SvgLabel(filename="mock", svg_size=svg_size)
-
-    load_svg_fn.assert_called_once_with("mock")
-    sl.svg.setFixedSize.assert_called_once_with(svg_size)
-    assert sl.svg == svg
-
-
-def test_SvgLabel_update(mocker):
-    """
-    Ensure SvgLabel calls the expected methods correctly to set the icon and size.
-    """
-    svg = mocker.MagicMock()
-    load_svg_fn = mocker.patch("securedrop_client.gui.misc.load_svg", return_value=svg)
-    mocker.patch("PyQt5.QtWidgets.QHBoxLayout.addWidget")
-    sl = SvgLabel(filename="mock", svg_size=QSize(1, 1))
-
-    sl.update_image(filename="mock_two", svg_size=QSize(2, 2))
-
-    assert sl.svg == svg
-    assert load_svg_fn.call_args_list[0][0][0] == "mock"
-    assert load_svg_fn.call_args_list[1][0][0] == "mock_two"
-    assert sl.svg.setFixedSize.call_args_list[0][0][0] == QSize(1, 1)
-    assert sl.svg.setFixedSize.call_args_list[1][0][0] == QSize(2, 2)
 
 
 def test_SecureQLabel_init():
