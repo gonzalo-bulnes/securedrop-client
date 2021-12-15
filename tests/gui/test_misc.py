@@ -12,6 +12,17 @@ from securedrop_client.gui import SecureQLabel, SvgLabel, SvgPushButton, SvgTogg
 app = QApplication([])
 
 
+class SvgPushButtonTest(unittest.TestCase):
+    def test_sets_an_icon(self):
+        button = SvgPushButton("error_icon.svg")
+        assert not button.icon().isNull()
+
+    @unittest.skip("I couldn't find out how to test this properly.")
+    def test_sets_the_icon_size_to_the_specified_dimensions(self):
+        button = SvgPushButton("error_icon.svg", svg_size=QSize(800, 600))
+        assert button.icon().actualSize(QSize(1000, 1000)) == QSize(800, 600)
+
+
 class SvgToggleButtonTest(unittest.TestCase):
     def test_sets_an_icon(self):
         button = SvgToggleButton(on="error_icon.svg", off="error_icon.svg")
@@ -50,28 +61,6 @@ class SvgToggleButtonTest(unittest.TestCase):
         )
         button.set_icon(on="printer.svg", off="printer.svg", svg_size=QSize(400, 300))
         assert button.icon().actualSize(QSize(1000, 1000)) == QSize(400, 300)
-
-
-def test_SvgPushButton_init(mocker):
-    """
-    Ensure SvgPushButton calls the expected methods correctly to set the icon and size.
-    """
-    svg_size = QSize(1, 1)
-    icon = mocker.MagicMock()
-    load_icon_fn = mocker.patch("securedrop_client.gui.misc.load_icon", return_value=icon)
-    setIcon_fn = mocker.patch("securedrop_client.gui.SvgPushButton.setIcon")
-    setIconSize_fn = mocker.patch("securedrop_client.gui.SvgPushButton.setIconSize")
-
-    spb = SvgPushButton(
-        normal="mock1", disabled="mock2", active="mock3", selected="mock4", svg_size=svg_size
-    )
-
-    assert spb.isCheckable() is False
-    load_icon_fn.assert_called_once_with(
-        normal="mock1", disabled="mock2", active="mock3", selected="mock4", disabled_off="mock2"
-    )
-    setIcon_fn.assert_called_once_with(icon)
-    setIconSize_fn.assert_called_once_with(svg_size)
 
 
 def test_SvgLabel_init(mocker):
