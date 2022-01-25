@@ -218,6 +218,9 @@ def start_app(args, qt_args) -> NoReturn:  # type: ignore [no-untyped-def]
     app_state = state.State()
     gui = Window(app_state)
 
+    gui.source_selection_changed.connect(app_state.set_selected_conversation)
+    gui.source_selection_cleared.connect(lambda: app_state.set_selected_conversation(None))
+
     controller = Controller(
         "http://localhost:8081/",
         gui,

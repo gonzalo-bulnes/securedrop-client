@@ -567,6 +567,9 @@ class MainView(QWidget):
     and main context view).
     """
 
+    source_selection_changed = pyqtSignal(state.SourceId)
+    source_selection_cleared = pyqtSignal()
+
     def __init__(self, parent: QObject, app_state: Optional[state.State]) -> None:
         super().__init__(parent)
 
@@ -586,6 +589,8 @@ class MainView(QWidget):
         # Create SourceList widget
         self.source_list = SourceList()
         self.source_list.itemSelectionChanged.connect(self.on_source_changed)
+        self.source_list.source_selection_changed.connect(self.source_selection_changed)
+        self.source_list.source_selection_cleared.connect(self.source_selection_cleared)
 
         # Create widgets
         self.view_holder = QWidget()
@@ -862,6 +867,9 @@ class SourceList(QListWidget):
     Displays the list of sources.
     """
 
+    source_selection_changed = pyqtSignal(state.SourceId)
+    source_selection_cleared = pyqtSignal()
+
     NUM_SOURCES_TO_ADD_AT_A_TIME = 32
     INITIAL_UPDATE_SCROLLBAR_WIDTH = 20
 
@@ -886,6 +894,8 @@ class SourceList(QListWidget):
 
         # To hold references to SourceListWidgetItem instances indexed by source UUID.
         self.source_items: Dict[str, SourceListWidgetItem] = {}
+
+        self.itemSelectionChanged.connect(self._on_item_selection_changed)
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         self.adjust_preview.emit(event.size().width())
@@ -1066,6 +1076,14 @@ class SourceList(QListWidget):
         source_widget = self.get_source_widget(source_uuid)
         if source_widget:
             source_widget.set_snippet(source_uuid, collection_item_uuid, content)
+
+    @pyqtSlot()
+    def _on_item_selection_changed(self) -> None:
+        source = self.get_selected_source()
+        if source is not None:
+            self.source_selection_changed.emit(state.SourceId(source.uuid))
+        else:
+            self.source_selection_cleared.emit()
 
 
 class SourcePreview(SecureQLabel):

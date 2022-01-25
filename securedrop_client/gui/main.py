@@ -23,7 +23,7 @@ import logging
 from gettext import gettext as _
 from typing import List, Optional
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QGuiApplication, QIcon, QKeySequence
 from PyQt5.QtWidgets import QAction, QApplication, QHBoxLayout, QMainWindow, QVBoxLayout, QWidget
 
@@ -44,6 +44,9 @@ class Window(QMainWindow):
     """
 
     icon = "icon.png"
+
+    source_selection_changed = pyqtSignal(state.SourceId)
+    source_selection_cleared = pyqtSignal()
 
     def __init__(self, app_state: Optional[state.State]) -> None:
         """
@@ -96,6 +99,9 @@ class Window(QMainWindow):
         quit.setShortcut(QKeySequence.Quit)
         quit.triggered.connect(self.close)
         self.addAction(quit)
+
+        self.main_view.source_selection_changed.connect(self.source_selection_changed)
+        self.main_view.source_selection_cleared.connect(self.source_selection_cleared)
 
     def setup(self, controller: Controller) -> None:
         """
