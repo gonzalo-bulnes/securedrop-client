@@ -11,10 +11,10 @@ from tests import factory
 def main_window(mocker, homedir):
     # Setup
     app = QApplication([])
-    gui = Window()
+    gui = Window(None)
     app.setActiveWindow(gui)
     gui.show()
-    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, proxy=False)
+    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, None, proxy=False)
     controller.authenticated_user = factory.User()
     controller.qubes = False
     gui.setup(controller)
@@ -51,10 +51,10 @@ def main_window(mocker, homedir):
 def main_window_no_key(mocker, homedir):
     # Setup
     app = QApplication([])
-    gui = Window()
+    gui = Window(None)
     app.setActiveWindow(gui)
     gui.show()
-    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, proxy=False)
+    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, None, proxy=False)
     controller.authenticated_user = factory.User()
     controller.qubes = False
     gui.setup(controller)
@@ -90,9 +90,9 @@ def main_window_no_key(mocker, homedir):
 @pytest.fixture(scope="function")
 def modal_dialog(mocker, homedir):
     app = QApplication([])
-    gui = Window()
+    gui = Window(None)
     gui.show()
-    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, proxy=False)
+    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, None, proxy=False)
     controller.authenticated_user = factory.User()
     controller.qubes = False
     gui.setup(controller)
@@ -109,9 +109,9 @@ def modal_dialog(mocker, homedir):
 @pytest.fixture(scope="function")
 def print_dialog(mocker, homedir):
     app = QApplication([])
-    gui = Window()
+    gui = Window(None)
     gui.show()
-    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, proxy=False)
+    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, None, proxy=False)
     controller.authenticated_user = factory.User()
     controller.qubes = False
     gui.setup(controller)
@@ -128,9 +128,9 @@ def print_dialog(mocker, homedir):
 @pytest.fixture(scope="function")
 def export_dialog(mocker, homedir):
     app = QApplication([])
-    gui = Window()
+    gui = Window(None)
     gui.show()
-    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, proxy=False)
+    controller = Controller("http://localhost", gui, mocker.MagicMock(), homedir, None, proxy=False)
     controller.authenticated_user = factory.User()
     controller.qubes = False
     gui.setup(controller)

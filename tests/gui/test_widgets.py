@@ -514,13 +514,13 @@ def test_MainView_init():
     """
     Ensure the MainView instance is correctly set up.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     assert isinstance(mv.source_list, SourceList)
     assert isinstance(mv.view_holder, QWidget)
 
 
 def test_MainView_setup(mocker):
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_list = mocker.MagicMock()
     controller = mocker.MagicMock()
 
@@ -534,7 +534,7 @@ def test_MainView_show_sources_with_none_selected(mocker):
     """
     Ensure the sources list is passed to the source list widget to be updated.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
 
     # Set up SourceList so that SourceList.get_selected_source() returns a source
     mv.source_list = SourceList()
@@ -559,7 +559,7 @@ def test_MainView_show_sources_from_cold_start(mocker):
     """
     Ensure the initial_update is called if no sources exist in the UI.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_list = mocker.MagicMock()
     mv.source_list.source_items = {}
     mv.empty_conversation_view = mocker.MagicMock()
@@ -573,7 +573,7 @@ def test_MainView_show_sources_with_no_sources_at_all(mocker):
     """
     Ensure the sources list is passed to the source list widget to be updated.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_list = mocker.MagicMock()
     mv.empty_conversation_view = mocker.MagicMock()
 
@@ -588,7 +588,7 @@ def test_MainView_show_sources_when_sources_are_deleted(mocker):
     """
     Ensure that show_sources also deletes the SourceConversationWrapper for a deleted source.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_list = mocker.MagicMock()
     mv.empty_conversation_view = mocker.MagicMock()
     mv.source_list.update = mocker.MagicMock(return_value=[])
@@ -607,7 +607,7 @@ def test_MainView_show_sources_does_not_reshow_deleted_sources(mocker):
     """
     Ensure that the hidden source remains hidden.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_list.controller = mocker.MagicMock()
     source = factory.Source(uuid="123")
     mv.source_list.update([factory.Source(uuid="abc"), source])
@@ -625,7 +625,7 @@ def test_MainView_delete_conversation_when_conv_wrapper_exists(mocker):
     source = factory.Source(uuid="123")
     conversation_wrapper = SourceConversationWrapper(source, mocker.MagicMock())
     conversation_wrapper.deleteLater = mocker.MagicMock()
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_conversations = {}
     mv.source_conversations["123"] = conversation_wrapper
 
@@ -641,7 +641,7 @@ def test_MainView_delete_conversation_when_conv_wrapper_does_not_exist(mocker):
     does not exist.
     """
     source_uuid = "foo"
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_conversations = {}
 
     mv.delete_conversation(source_uuid)
@@ -653,7 +653,7 @@ def test_MainView_on_source_changed(mocker):
     """
     Ensure set_conversation is called when source changes.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.set_conversation = mocker.MagicMock()
     mv.source_list = mocker.MagicMock()
     mv.source_list.get_selected_source = mocker.MagicMock(return_value=factory.Source())
@@ -673,7 +673,7 @@ def test_MainView_on_source_changed_does_not_raise_InvalidRequestError(mocker):
     If the source no longer exists in the local data store, ensure we just log and do not raise
     an exception.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.set_conversation = mocker.MagicMock()
     mv.source_list = mocker.MagicMock()
     mv.source_list.get_selected_source = mocker.MagicMock(return_value=factory.Source())
@@ -696,7 +696,7 @@ def test_MainView_on_source_changed_when_source_no_longer_exists(mocker):
     """
     Test that conversation for a source is cleared when the source no longer exists.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.set_conversation = mocker.MagicMock()
     mv.source_list = mocker.MagicMock()
     mv.source_list.get_selected_source = mocker.MagicMock(return_value=None)
@@ -711,7 +711,7 @@ def test_MainView_on_source_changed_updates_conversation_view(mocker, session):
     """
     Test that the source collection is displayed in the conversation view.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     # mv.source_list = mocker.MagicMock()
     mv.controller = mocker.MagicMock(is_authenticated=True)
     source = factory.Source()
@@ -752,7 +752,7 @@ def test_MainView_on_source_changed_SourceConversationWrapper_is_preserved(mocke
     SourceConversationWrapper when we click away from a given source. We should create it the
     first time, and then it should persist.
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.set_conversation = mocker.MagicMock()
     source_selected = mocker.patch("securedrop_client.gui.widgets.SourceList.source_selected")
     mv.controller = mocker.MagicMock(is_authenticated=True)
@@ -829,10 +829,10 @@ def test_MainView_refresh_source_conversations(homedir, mocker, qtbot, session_m
 
     sources = [source1, source2]
 
-    mv = MainView(None)
+    mv = MainView(None, None)
 
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
     controller.api = mocker.MagicMock()
 
     mv.setup(controller)
@@ -906,10 +906,10 @@ def test_MainView_refresh_source_conversations(homedir, mocker, qtbot, session_m
 def test_MainView_refresh_source_conversations_with_deleted(
     homedir, mocker, session, session_maker
 ):
-    mv = MainView(None)
+    mv = MainView(None, None)
 
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
     controller.api = mocker.MagicMock()
 
     debug_logger = mocker.patch("securedrop_client.gui.widgets.logger.debug")
@@ -950,7 +950,7 @@ def test_MainView_set_conversation(mocker):
     Ensure the passed-in widget is added to the layout of the main view holder
     (i.e. that area of the screen on the right hand side).
     """
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.view_layout = mocker.MagicMock()
 
     mock_widget = mocker.MagicMock()
@@ -967,7 +967,7 @@ def test_MainView__hide_source(mocker):
     """
     source = factory.Source(uuid="123")
     conversation_wrapper = SourceConversationWrapper(source, mocker.MagicMock())
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_conversations = {}
     mv.source_conversations["123"] = conversation_wrapper
     mv.source_list.controller = mocker.MagicMock()
@@ -992,7 +992,7 @@ def test_MainView__hide_source_with_multiple_sources(mocker):
     """
     source1 = factory.Source(uuid="abc")
     source2 = factory.Source(uuid="123")
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_conversations = {}
     mv.source_conversations["123"] = SourceConversationWrapper(source1, mocker.MagicMock())
     mv.source_conversations["abc"] = SourceConversationWrapper(source2, mocker.MagicMock())
@@ -1018,7 +1018,7 @@ def test_MainView__on_source_deletion_successful(mocker):
     """
     source = factory.Source(uuid="123")
     conversation_wrapper = SourceConversationWrapper(source, mocker.MagicMock())
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_conversations = {}
     mv.source_conversations["123"] = conversation_wrapper
     mv.source_list.controller = mocker.MagicMock()
@@ -1035,19 +1035,20 @@ def test_MainView__on_source_deletion_successful_does_not_select_next_source(moc
     """
     Ensure that no other source is selected by default after a source deletion.
     """
-    source = factory.Source(uuid="123")
-    mv = MainView(None)
+    source_uuid = "4"
+    source = factory.Source(uuid=source_uuid)
+    mv = MainView(None, None)
     mv.setup(mocker.MagicMock())
     mv.source_list.update([source])
     mv.source_list.setCurrentItem(mv.source_list.itemAt(0, 0))  # select source
 
-    mv._on_source_deletion_successful("123", datetime.now())
+    mv._on_source_deletion_successful(source_uuid, datetime.now())
 
     assert not mv.source_list.get_selected_source()
 
 
 def test_MainView__on_source_deletion_handles_keyerror():
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv._on_source_deletion_successful("throw-keyerror", datetime.now())
 
 
@@ -1152,7 +1153,7 @@ def test_SourceList_update_when_source_deleted(mocker, session, session_maker, h
     ongoing sync will handle the deletion of the source's widgets.
     """
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
 
     # create the source in another session
     source = factory.Source()
@@ -2007,7 +2008,7 @@ def test_SourceWidget_set_snippet_draft_only(mocker, session_maker, session, hom
     Snippets/previews do not include draft messages.
     """
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
     source = factory.Source(document_count=1)
     mark_seen_signal = mocker.MagicMock()
     f = factory.File(source=source)
@@ -2027,7 +2028,7 @@ def test_SourceWidget_set_snippet(mocker, session_maker, session, homedir):
     Snippets are set as expected.
     """
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
     source = factory.Source(document_count=1)
     mark_seen_signal = mocker.MagicMock()
     f = factory.File(source=source)
@@ -3078,7 +3079,7 @@ def test_ReplyWidget__on_update_authenticated_user(mocker):
 def test_ReplyWidget__on_update_authenticated_user_updates_sender_when_changed(mocker, homedir):
     authenticated_user = factory.User()
     co = mocker.MagicMock(authenticated_user=authenticated_user)
-    co = logic.Controller("http://localhost", mocker.MagicMock(), mocker.MagicMock(), homedir)
+    co = logic.Controller("http://localhost", mocker.MagicMock(), mocker.MagicMock(), homedir, None)
     user = factory.User(uuid="abc123", username="foo")
     co.authenticated_user = user
     co.session.refresh = mocker.MagicMock()
@@ -3470,7 +3471,7 @@ def test_FileWidget_on_file_missing_show_download_button_when_uuid_matches(
     session.commit()
 
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
 
     fw = FileWidget(file.uuid, controller, controller.file_ready, controller.file_missing, 0, 123)
     fw._on_file_missing(file.source.uuid, file.uuid, str(file))
@@ -3608,7 +3609,7 @@ def test_FileWidget_update_file_size_with_deleted_file(
     mocker, homedir, config, session_maker, source
 ):
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
 
     file = factory.File(source=source["source"], is_downloaded=True)
     controller.session.add(file)
@@ -4169,7 +4170,7 @@ def test_SourceConversationWrapper_on_conversation_updated(mocker, qtbot):
 
 def test_SourceConversationWrapper_on_source_deleted(mocker):
     source = factory.Source(uuid="123")
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_list = mocker.MagicMock()
     mv.source_list.get_selected_source = mocker.MagicMock(return_value=source)
     mv.controller = mocker.MagicMock(is_authenticated=True)
@@ -4249,7 +4250,7 @@ def test_SourceConversationWrapper_on_source_deletion_failed_wrong_uuid(mocker):
 
 def test_SourceConversationWrapper_on_conversation_deleted(mocker):
     source = factory.Source(uuid="123")
-    mv = MainView(None)
+    mv = MainView(None, None)
     mv.source_list = mocker.MagicMock()
     mv.source_list.get_selected_source = mocker.MagicMock(return_value=source)
     mv.controller = mocker.MagicMock(is_authenticated=True)
@@ -4520,7 +4521,9 @@ def test_ConversationView_add_message(mocker, session, session_maker, homedir):
     """
     Adding a message results in a new MessageWidget added to the layout.
     """
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = factory.User()
     source = factory.Source()
     message = factory.Message(source=source, content=">^..^<")
@@ -4546,7 +4549,9 @@ def test_ConversationView_add_message_no_content(mocker, session, session_maker,
     checks that if a `Message` has `content = None` that a helpful message is displayed as would
     be the case if download/decryption never occurred or failed.
     """
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = factory.User()
     source = factory.Source()
     message = factory.Message(source=source, is_decrypted=False, content=None)
@@ -4628,7 +4633,9 @@ def test_ConversationView_add_reply_from_reply_box(mocker, session, session_make
     """
     Adding a reply from reply box results in a new ReplyWidget added to the layout.
     """
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = factory.User()
 
     source = factory.Source()
@@ -4681,7 +4688,9 @@ def test_ConversationView_add_reply(mocker, homedir, session, session_maker):
     """
     Adding a reply from a source results in a new ReplyWidget added to the layout.
     """
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = factory.User()
     source = factory.Source()
     sender = factory.User()
@@ -4714,7 +4723,9 @@ def test_ConversationView_add_reply_no_content(mocker, homedir, session_maker, s
     checks that if a `Reply` has `content = None` that a helpful message is displayed as would
     be the case if download/decryption never occurred or failed.
     """
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = factory.User()
     source = factory.Source()
     sender = factory.User()
@@ -4748,7 +4759,9 @@ def test_ConversationView_add_reply_that_has_current_user_as_sender(
     Adding a reply from a source results in a new ReplyWidget added to the layout.
     """
     authenticated_user = factory.User()
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = authenticated_user
     source = factory.Source()
     reply = factory.Reply(uuid="abc123", source=source, content=">^..^<")
@@ -5178,7 +5191,7 @@ def test_ReplyBoxWidget_enable_after_source_gets_key(mocker, session, session_ma
 
     mocker.patch("sdclientapi.API")
     mock_gui = mocker.MagicMock()
-    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir)
+    controller = logic.Controller("http://localhost", mock_gui, session_maker, homedir, None)
     controller.is_authenticated = True
 
     # create source without key or fingerprint
@@ -5636,7 +5649,9 @@ def test_update_conversation_updates_sender(mocker, homedir, session_maker, sess
     session.add(reply.journalist)
     session.add(reply)
     session.commit()
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = factory.User()
     controller.update_authenticated_user = mocker.MagicMock()
     cv = ConversationView(source, controller)
@@ -5660,7 +5675,9 @@ def test_update_conversation_calls_updates_sender_for_authenticated_user(
     session.add(reply.journalist)
     session.add(reply)
     session.commit()
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.authenticated_user = reply.journalist
     controller.update_authenticated_user = mocker.MagicMock()
     cv = ConversationView(source, controller)
@@ -5684,7 +5701,9 @@ def test_update_conversation_updates_sender_when_sender_changes(
     session.add(reply.journalist)
     session.add(reply)
     session.commit()
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.update_authenticated_user = mocker.MagicMock()
     cv = ConversationView(source, controller)
     cv.update_deletion_markers = mocker.MagicMock()
@@ -5719,7 +5738,9 @@ def test_update_conversation_shows_marker_when_all_items_deleted(
     source.interaction_count = 5
     session.add(source)
     session.commit()
-    controller = logic.Controller("http://localhost", mocker.MagicMock(), session_maker, homedir)
+    controller = logic.Controller(
+        "http://localhost", mocker.MagicMock(), session_maker, homedir, None
+    )
     controller.update_authenticated_user = mocker.MagicMock()
     cv = ConversationView(source, controller)
     cv.update_conversation(cv.source.collection)
