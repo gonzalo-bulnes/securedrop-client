@@ -23,10 +23,10 @@ class FileId(str):
 
 class File:
     def __init__(self, id: FileId) -> None:
-        self._id: str = id
+        self._id: FileId = id
         self._is_downloaded: bool = False
 
-    def _get_id(self) -> str:
+    def _get_id(self) -> FileId:
         return self._id
 
     def _get_is_downloaded(self) -> bool:
