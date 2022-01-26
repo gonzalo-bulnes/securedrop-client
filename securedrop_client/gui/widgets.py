@@ -611,11 +611,15 @@ class MainView(QWidget):
         # is a temporary solution to keep copies of our objects since we do delete them.
         self.source_conversations = {}  # type: Dict[str, SourceConversationWrapper]
 
-    def setup(self, controller: Controller) -> None:
+    def setup(
+        self, controller: Controller, download_conversation: Optional[QAction] = None
+    ) -> None:
         """
         Pass through the controller object to this widget.
         """
         self.controller = controller
+        self._download_conversation = download_conversation
+
         self.controller.source_deletion_successful.connect(self._on_source_deletion_successful)
         self.source_list.setup(controller)
 
@@ -670,7 +674,7 @@ class MainView(QWidget):
                 conversation_wrapper.conversation_view.update_conversation(source.collection)
             else:
                 conversation_wrapper = SourceConversationWrapper(
-                    source, self.controller, self._state
+                    source, self.controller, self._state, self._download_conversation
                 )
                 self.source_conversations[source.uuid] = conversation_wrapper
 
@@ -3261,7 +3265,11 @@ class SourceConversationWrapper(QWidget):
     deleting_conversation = False
 
     def __init__(
-        self, source: Source, controller: Controller, app_state: Optional[state.State]
+        self,
+        source: Source,
+        controller: Controller,
+        app_state: Optional[state.State],
+        download_conversation: Optional[QAction] = None,
     ) -> None:
         super().__init__()
 
@@ -3286,7 +3294,9 @@ class SourceConversationWrapper(QWidget):
         layout.setSpacing(0)
 
         # Create widgets
-        self.conversation_title_bar = SourceProfileShortWidget(source, controller, app_state)
+        self.conversation_title_bar = SourceProfileShortWidget(
+            source, controller, app_state, download_conversation
+        )
         self.conversation_view = ConversationView(source, controller)
         self.reply_box = ReplyBoxWidget(source, controller)
         self.deletion_indicator = SourceDeletionIndicator()
@@ -3705,7 +3715,11 @@ class SourceMenu(QMenu):
     SOURCE_MENU_CSS = load_css("source_menu.css")
 
     def __init__(
-        self, source: Source, controller: Controller, app_state: Optional[state.State]
+        self,
+        source: Source,
+        controller: Controller,
+        app_state: Optional[state.State],
+        download_conversation: Optional[QAction] = None,
     ) -> None:
         super().__init__()
         self.source = source
@@ -3716,7 +3730,8 @@ class SourceMenu(QMenu):
         separator_font.setLetterSpacing(QFont.AbsoluteSpacing, 2)
         separator_font.setBold(True)
 
-        self.addAction(DownloadConversation(self, self.controller, app_state))
+        if download_conversation is not None:
+            self.addAction(download_conversation)
 
         delete_section = self.addSection(_("DELETE"))
         delete_section.setFont(separator_font)
@@ -3795,7 +3810,11 @@ class SourceMenuButton(QToolButton):
     """
 
     def __init__(
-        self, source: Source, controller: Controller, app_state: Optional[state.State]
+        self,
+        source: Source,
+        controller: Controller,
+        app_state: Optional[state.State],
+        download_conversation: Optional[QAction] = None,
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -3806,7 +3825,7 @@ class SourceMenuButton(QToolButton):
         self.setIcon(load_icon("ellipsis.svg"))
         self.setIconSize(QSize(22, 33))  # Make it taller than the svg viewBox to increase hitbox
 
-        self.menu = SourceMenu(self.source, self.controller, app_state)
+        self.menu = SourceMenu(self.source, self.controller, app_state, download_conversation)
         self.setMenu(self.menu)
 
         self.setPopupMode(QToolButton.InstantPopup)
@@ -3847,7 +3866,11 @@ class SourceProfileShortWidget(QWidget):
     VERTICAL_MARGIN = 14
 
     def __init__(
-        self, source: Source, controller: Controller, app_state: Optional[state.State]
+        self,
+        source: Source,
+        controller: Controller,
+        app_state: Optional[state.State],
+        download_conversation: Optional[QAction] = None,
     ) -> None:
         super().__init__()
 
@@ -3870,7 +3893,7 @@ class SourceProfileShortWidget(QWidget):
         )
         title = TitleLabel(self.source.journalist_designation)
         self.updated = LastUpdatedLabel(_(arrow.get(self.source.last_updated).format("MMM D")))
-        menu = SourceMenuButton(self.source, self.controller, app_state)
+        menu = SourceMenuButton(self.source, self.controller, app_state, download_conversation)
         header_layout.addWidget(title, alignment=Qt.AlignLeft)
         header_layout.addStretch()
         header_layout.addWidget(self.updated, alignment=Qt.AlignRight)
