@@ -86,4 +86,6 @@ def _update_state(
 ) -> None:
     for submission in submissions:
         if submission.is_file():
-            app_state.add_file(submission.source_uuid, submission.uuid)
+            app_state.add_file(
+                state.ConversationId(submission.source_uuid), state.FileId(submission.uuid)
+            )
