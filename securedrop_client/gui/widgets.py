@@ -3730,8 +3730,10 @@ class SourceMenu(QMenu):
         separator_font.setLetterSpacing(QFont.AbsoluteSpacing, 2)
         separator_font.setBold(True)
 
-        if download_conversation is not None:
-            self.addAction(download_conversation)
+        download_section = self.addSection(_("DOWNLOAD"))
+        download_section.setFont(separator_font)
+
+        self.addAction(DownloadConversation(self, self.controller, app_state))
 
         delete_section = self.addSection(_("DELETE"))
         delete_section.setFont(separator_font)
@@ -3748,7 +3750,7 @@ class DownloadConversation(QAction):
     ) -> None:
         self._controller = controller
         self._state = app_state
-        self._text = _("Download All Files")
+        self._text = _("All Files")
         super().__init__(self._text, parent)
         self.setShortcut(Qt.CTRL + Qt.Key_D)
         self.triggered.connect(self.on_triggered)
