@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import QAction, QApplication, QHBoxLayout, QMainWindow, QVB
 from securedrop_client import __version__, state
 from securedrop_client.db import Source, User
 from securedrop_client.gui.auth import LoginDialog
-from securedrop_client.gui.widgets import DownloadConversation, LeftPane, MainView, TopPane
+from securedrop_client.gui.widgets import LeftPane, MainView, TopPane
 from securedrop_client.logic import Controller
 from securedrop_client.resources import load_css, load_font, load_icon
 
@@ -64,8 +64,6 @@ class Window(QMainWindow):
         self.setStyleSheet(load_css("sdclient.css"))
         self.setWindowTitle(_("SecureDrop Client {}").format(__version__))
         self.setWindowIcon(load_icon(self.icon))
-
-        self._state = app_state
 
         # Top Pane to display activity and error messages
         self.top_pane = TopPane()
@@ -111,13 +109,9 @@ class Window(QMainWindow):
         views used in the UI.
         """
         self.controller = controller
-
-        download_conversation = DownloadConversation(self, controller, self._state)
-        self.addAction(download_conversation)
-
         self.top_pane.setup(self.controller)
         self.left_pane.setup(self, self.controller)
-        self.main_view.setup(self.controller, download_conversation)
+        self.main_view.setup(self.controller)
         self.show_login()
 
     def show_main_window(self, db_user: User = None) -> None:
