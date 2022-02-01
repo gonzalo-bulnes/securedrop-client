@@ -13,6 +13,7 @@ import arrow
 import pytest
 import sqlalchemy.orm.exc
 from PyQt5.QtCore import Qt
+from PyQt5.QtTest import QSignalSpy
 from sdclientapi import AuthError, RequestTimeoutError, ServerConnectionError
 
 from securedrop_client import db, state
@@ -1143,15 +1144,14 @@ def test_create_client_dir_permissions(tmpdir, mocker, session_maker):
 
 
 def test_Controller_download_conversation(homedir, config, session, mocker, session_maker):
+
     app_state = state.State()
     gui = mocker.MagicMock()
     co = Controller("http://localhost", gui, session_maker, homedir, app_state)
     co.api = "journalist is authenticated"
 
-    co.add_job = mocker.MagicMock()
-    co.add_job.emit = mocker.MagicMock()
-    co.file_download_started = mocker.MagicMock()
-    co.file_download_started.emit = mocker.MagicMock()
+    add_job_emissions = QSignalSpy(co.add_job)
+    file_download_started_emissions = QSignalSpy(co.file_download_started)
 
     job_success_signal = mocker.MagicMock()
     job_failure_signal = mocker.MagicMock()
@@ -1177,11 +1177,10 @@ def test_Controller_download_conversation(homedir, config, session, mocker, sess
         call(another_file_id, co.data_dir, co.gpg),
     ]
     assert file_download_job_constructor.mock_calls == expected
-    expected = [
-        call(job),
-        call(job),
-    ]
-    assert co.add_job.emit.mock_calls == expected
+
+    assert len(add_job_emissions) == 2
+    assert add_job_emissions[0] == [job]
+    assert add_job_emissions[1] == [job]
     expected = [
         call(co.on_file_download_success, type=Qt.QueuedConnection),
         call(co.on_file_download_success, type=Qt.QueuedConnection),
@@ -1192,11 +1191,10 @@ def test_Controller_download_conversation(homedir, config, session, mocker, sess
         call(co.on_file_download_failure, type=Qt.QueuedConnection),
     ]
     assert job_failure_signal.connect.mock_calls == expected
-    expected = [
-        call(some_file_id),
-        call(another_file_id),
-    ]
-    assert co.file_download_started.emit.mock_calls == expected
+
+    assert len(file_download_started_emissions) == 2
+    assert file_download_started_emissions[0] == [some_file_id]
+    assert file_download_started_emissions[1] == [another_file_id]
 
 
 def test_Controller_download_conversation_requires_authenticated_journalist(
