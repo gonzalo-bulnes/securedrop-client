@@ -1105,6 +1105,14 @@ class Controller(QObject):
                 self.file_download_started.emit(file.id)
 
     @login_required
+    def export_conversation(self, id: state.ConversationId, passphrase: str) -> None:
+        """Export all ocnversation files, assuming they've been downloaded already"""
+        self.download_conversation(id)
+        files = self._state.conversation_files(id)
+        for file in files:
+            self.export_file_to_usb_drive(file.id, passphrase)
+
+    @login_required
     def send_reply(self, source_uuid: str, reply_uuid: str, message: str) -> None:
         """
         Send a reply to a source.
