@@ -90,7 +90,7 @@ class State(QObject):
 
     @property
     def selected_conversation_has_downloadable_files(self) -> bool:
-        """Whether the selected conversation has any files that are not alredy downloaded"""
+        """Whether the selected conversation has any files that are not already downloaded"""
         selected_conversation_id = self._selected_conversation
         if selected_conversation_id is None:
             return False
@@ -100,6 +100,24 @@ class State(QObject):
             if not f.is_downloaded:
                 return True
         return False
+
+    @property
+    def selected_conversation_has_exportable_files(self) -> bool:
+        """Whether the selected conversation has any files, and all were already downloaded"""
+        selected_conversation_id = self._selected_conversation
+        if selected_conversation_id is None:
+            return False
+
+        default: List[File] = []
+        files = self._conversation_files.get(selected_conversation_id, default)
+        if len(files) <= 0:
+            return False
+
+        for f in files:
+            if not f.is_downloaded:
+                return False
+
+        return True
 
     @pyqtSlot(SourceId)
     def set_selected_conversation_for_source(self, source_id: SourceId) -> None:

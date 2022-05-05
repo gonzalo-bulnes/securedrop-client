@@ -68,6 +68,9 @@ msgstr ""
 msgid "Delete All Files and Messages"
 msgstr ""
 
+msgid "All Files"
+msgstr ""
+
 msgid "SecureDrop Client {}"
 msgstr ""
 
