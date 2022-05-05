@@ -128,15 +128,14 @@ class DeleteConversationAction(QAction):
             self._state.remove_conversation_files(id)
 
 
-class ExportConversationFiles(QAction):
-    """Download all files of the currently selected conversation."""
+class ExportConversation(QAction):
+    """Export all files of the currently selected conversation."""
 
     def __init__(
         self,
-        source: Source,
         parent: QMenu,
         controller: Controller,
-        confirmation_dialog: Callable[[Source], QDialog],
+        confirmation_dialog: Callable[[], QDialog],
         app_state: Optional[state.State] = None,
     ) -> None:
         self._controller = controller
@@ -146,7 +145,7 @@ class ExportConversationFiles(QAction):
 
         self._passphrase: Optional[str] = None
 
-        self._confirmation_dialog = confirmation_dialog(self.source)
+        self._confirmation_dialog = confirmation_dialog()
         self._confirmation_dialog.passphrase_submitted.connect(self._on_passphrase_submitted)
         self._confirmation_dialog.accepted.connect(lambda: self._on_confirmation_dialog_accepted())
         self._confirmation_dialog.rejected.connect(lambda: self._on_confirmation_dialog_rejected())
@@ -154,6 +153,12 @@ class ExportConversationFiles(QAction):
 
         self._connect_enabled_to_conversation_changes()
         self._set_enabled_initial_value()
+
+    def trigger(self) -> None:
+        if self._controller.api is None:
+            self._controller.on_action_requiring_login()
+        else:
+            self._confirmation_dialog.exec()
 
     @property
     def passphrase(self) -> Optional[str]:
@@ -167,13 +172,11 @@ class ExportConversationFiles(QAction):
         self._passphrase = passphrase
 
     @pyqtSlot(str)
-    def on_passphrase_submitted(self, passphrase: str) -> None:
-        print("on_passphrase_submitted", passphrase)
+    def _on_passphrase_submitted(self, passphrase: str) -> None:
         self._passphrase = passphrase
 
     @pyqtSlot()
-    def on_confirmation_dialog_accepted(self) -> None:
-        print("on_conformation_dialog_accepted")
+    def _on_confirmation_dialog_accepted(self) -> None:
         if self._controller.api is None:
             self._controller.on_action_requiring_login()
         else:
@@ -185,6 +188,9 @@ class ExportConversationFiles(QAction):
                 if passphrase is None:
                     passphrase = ""
                 self._controller.export_conversation(id, passphrase)
+
+    def _on_confirmation_dialog_rejected(self) -> None:
+        self.passphrase = None
 
     def _connect_enabled_to_conversation_changes(self) -> None:
         if self._state is not None:
