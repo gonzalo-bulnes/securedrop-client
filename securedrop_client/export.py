@@ -118,7 +118,8 @@ class Export(QObject):
             )
             return output.decode("utf-8").strip()
         except subprocess.CalledProcessError as e:
-            logger.error(e)
+            logger.error("Subprocess failed")
+            logger.debug(f"Subprocess failed: {e}")
             raise ExportError(ExportStatus.CALLED_PROCESS_ERROR.value)
 
     def _create_archive(
@@ -282,7 +283,8 @@ class Export(QObject):
                 self._run_printer_preflight(temp_dir)
                 self.printer_preflight_success.emit()
             except ExportError as e:
-                logger.error(e)
+                logger.error("Export failed")
+                logger.debug(f"Export failed: {e}")
                 self.printer_preflight_failure.emit(e)
 
     @pyqtSlot(list, str)
@@ -303,7 +305,8 @@ class Export(QObject):
                 self.export_usb_call_success.emit()
                 logger.debug("Export successful")
             except ExportError as e:
-                logger.error(e)
+                logger.error("Export failed")
+                logger.debug(f"Export failed: {e}")
                 self.export_usb_call_failure.emit(e)
 
         self.export_completed.emit(filepaths)
@@ -325,7 +328,8 @@ class Export(QObject):
                 self.print_call_success.emit()
                 logger.debug("Print successful")
             except ExportError as e:
-                logger.error(e)
+                logger.error("Export failed")
+                logger.debug(f"Export failed: {e}")
                 self.print_call_failure.emit(e)
 
         self.export_completed.emit(filepaths)
