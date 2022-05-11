@@ -2609,10 +2609,20 @@ class ExportDialog(ModalDialog):
         self.error_status: Optional[ExportStatus] = None
 
         # Connect controller signals to slots
-        self.controller.export.preflight_check_call_success.connect(self._on_preflight_success)
+        #self.controller.export.preflight_check_call_success.connect(self._on_preflight_success)
         self.controller.export.preflight_check_call_failure.connect(self._on_preflight_failure)
         self.controller.export.export_usb_call_success.connect(self._on_export_success)
         self.controller.export.export_usb_call_failure.connect(self._on_export_failure)
+
+        from securedrop_client.gui.conversation.export import Device, Export
+
+        device = Device(controller)
+        device.available.connect(self._on_device_available)
+        device.unavailable.connect(self._on_device_unavailable)
+
+        export = Export(device)
+        export.succeeded.connect(self._on_export_succeeded)
+        export.failed.connect(self._on_export_failed)
 
         # Connect parent signals to slots
         self.continue_button.setEnabled(False)
@@ -2786,8 +2796,8 @@ class ExportDialog(ModalDialog):
         self.passphrase_field.setDisabled(True)
         self.controller.export_file_to_usb_drive(self.file_uuid, self.passphrase_field.text())
 
-    @pyqtSlot()
-    def _on_preflight_success(self) -> None:
+    @pyqtSlot
+    def _on_device_available(self) -> None:
         # If the continue button is disabled then this is the result of a background preflight check
         self.stop_animate_header()
         self.header_icon.update_image("savetodisk.svg", QSize(64, 64))
