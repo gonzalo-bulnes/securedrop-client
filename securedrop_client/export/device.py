@@ -25,7 +25,7 @@ class ConnectedDevice:
         # Try to write to the device to confirm it's connected
         metadata = VirtualFile(cls._METADATA_FILE_NAME, cls._METADATA)
         test_archive = Archive(
-            dir_path=str(_temp_dir), name=cls._ARCHIVE_NAME, files=[], virtual_files=[metadata]
+            dir_path=_temp_dir.name, name=cls._ARCHIVE_NAME, files=[], virtual_files=[metadata]
         )
         test_archive.save(files_extraction_path="sd-export")
 
