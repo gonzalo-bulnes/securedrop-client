@@ -81,7 +81,7 @@ version: 2
 jobs:
   build-buster:
     docker:
-      - image: debian:buster
+      - image: circleci/python:3.7-buster
     steps:
       - *install_deps
       - checkout
