@@ -1,0 +1,24 @@
+babel
+black
+flake8
+flaky
+isort
+MarkupSafe
+mypy
+Pillow>=9.0.1  # for mouseinfo, pyscreeze as of CVE-2022-{22817,24303}
+pip-tools>=6.5.0  # for jazzband/piptools#1558
+PyAutoGUI
+PyQt5==5.11.3
+pytest
+pytest-cov
+pytest-mock
+pytest-qt
+pytest-random-order
+pytest-vcr
+pytest-xdist
+semgrep
+sip==4.19.8
+toml
+types-python-dateutil
+types-setuptools
+wlc

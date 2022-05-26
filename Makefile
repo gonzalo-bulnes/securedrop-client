@@ -14,11 +14,11 @@ venv-sdw: hooks ## Provision a Python 3 virtualenv for development on a prod-lik
 	@echo "Make sure to install the apt packages for system Qt."
 	@echo "Then run: source .venv/bin/activate"
 
-.PHONY: venv
-venv: hooks ## Provision a Python 3 virtualenv for development on Linux
+.PHONY: venv-buster
+venv-buster: hooks ## Provision a Python 3 virtualenv for development on Linux
 	$(PYTHON) -m venv .venv
 	.venv/bin/pip install --upgrade pip wheel
-	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
+	.venv/bin/pip install --require-hashes -r "requirements/dev-buster-requirements.txt"
 	@echo "#################"
 	@echo "Make sure to run: source .venv/bin/activate"
 
