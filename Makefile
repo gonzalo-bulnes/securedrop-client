@@ -4,15 +4,15 @@ all: help
 # Default to plain "python3"
 PYTHON ?= python3
 
-.PHONY: venv-debian
-venv-debian: hooks ## Provision a Python 3 virtualenv for development on a prod-like system that has installed dependencies specified in https://github.com/freedomofpress/securedrop-debian-packaging/blob/main/securedrop-client/debian/control
-	$(PYTHON) -m venv .venv-debian --system-site-packages
-	.venv-debian/bin/pip install --upgrade pip wheel
-	.venv-debian/bin/pip install --require-hashes -r "requirements/dev-requirements-debian.txt"
+.PHONY: venv-sdw
+venv-sdw: hooks ## Provision a Python 3 virtualenv for development on a prod-like system that has installed dependencies specified in https://github.com/freedomofpress/securedrop-debian-packaging/blob/main/securedrop-client/debian/control
+	$(PYTHON) -m venv .venv --system-site-packages
+	.venv/bin/pip install --upgrade pip wheel
+	.venv/bin/pip install --require-hashes -r "requirements/dev-sdw-requirements.txt"
 	@echo "#################"
 	@echo "Virtualenv with Debian system-packages is complete."
 	@echo "Make sure to install the apt packages for system Qt."
-	@echo "Then run: source .venv-debian/bin/activate"
+	@echo "Then run: source .venv/bin/activate"
 
 .PHONY: venv
 venv: hooks ## Provision a Python 3 virtualenv for development on Linux
@@ -144,11 +144,11 @@ check: clean check-black check-isort semgrep bandit lint mypy test-random test-i
 .PHONY: sync-requirements
 sync-requirements:  ## Update dev-requirements.txt to pin to the same versions of prod dependencies
 	if test -f "requirements/dev-requirements.txt"; then rm -r requirements/dev-requirements.txt; fi
-	if test -f "requirements/dev-requirements-debian.txt"; then rm -r requirements/dev-requirements-debian.txt; fi
+	if test -f "requirements/dev-sdw-requirements.txt"; then rm -r requirements/dev-sdw-requirements.txt; fi
 	cp requirements/requirements.txt requirements/dev-requirements.txt
-	cp requirements/requirements.txt requirements/dev-requirements-debian.txt
+	cp requirements/requirements.txt requirements/dev-sdw-requirements.txt
 	pip-compile --allow-unsafe --generate-hashes --output-file requirements/dev-requirements.txt requirements/requirements.in requirements/dev-requirements.in
-	pip-compile --allow-unsafe --generate-hashes --output-file requirements/dev-requirements-debian.txt requirements/requirements.in requirements/dev-requirements-debian.in
+	pip-compile --allow-unsafe --generate-hashes --output-file requirements/dev-sdw-requirements.txt requirements/requirements.in requirements/dev-sdw-requirements.in
 
 .PHONY: requirements
 requirements:  ## Update *requirements.txt files if pinned versions do not comply with the dependency specifications in *requirements.in
@@ -167,8 +167,8 @@ update-dev-only-dependencies:  ## Update dev-requirements.txt to pin to the late
 		pip-compile --allow-unsafe --generate-hashes --upgrade-package $file --output-file requirements/dev-requirements.txt requirements/requirements.in requirements/dev-requirements.in; \
 	done < 'requirements/dev-requirements.in'
 	@while read line; do \
-		pip-compile --allow-unsafe --generate-hashes --upgrade-package $file --output-file requirements/dev-requirements-debian.txt requirements/requirements.in requirements/dev-requirements-debian.in; \
-	done < 'requirements/dev-requirements-debian.in'
+		pip-compile --allow-unsafe --generate-hashes --upgrade-package $file --output-file requirements/dev-sys-requirements.txt requirements/requirements.in requirements/dev-sys-requirements.in; \
+	done < 'requirements/dev-sys-requirements.in'
 
 # Explaination of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" and any make targets that might appear between : and ##
