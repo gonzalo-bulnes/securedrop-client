@@ -15,7 +15,6 @@ common-steps:
         set -e
         make venv-buster
         source .venv/bin/activate
-        pip install --require-hashes -r requirements/dev-buster-requirements.txt
         export PYTHONPATH=$PYTHONPATH:.  # so alembic can get to Base metadata
         make check --keep-going
 
