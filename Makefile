@@ -4,6 +4,14 @@ all: help
 # Default to plain "python3"
 PYTHON ?= python3
 
+.PHONY: venv
+venv: hooks ## Provision a Python 3 virtualenv for development on Linux
+	$(PYTHON) -m venv .venv
+	.venv/bin/pip install --upgrade pip wheel
+	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
+	@echo "#################"
+	@echo "Make sure to run: source .venv/bin/activate"
+
 .PHONY: venv-sdw
 venv-sdw: hooks ## Provision a Python 3 virtualenv for development on a prod-like system that has installed dependencies specified in https://github.com/freedomofpress/securedrop-debian-packaging/blob/main/securedrop-client/debian/control
 	$(PYTHON) -m venv .venv --system-site-packages
