@@ -4,8 +4,8 @@ from typing import List
 
 from sqlalchemy.orm.session import Session
 
-from securedrop_client.db import File
-from securedrop_client.storage import get_local_files
+from securedrop_client.db import File, Message
+from securedrop_client.storage import get_local_files, get_local_messages
 
 
 class Database:
@@ -17,3 +17,6 @@ class Database:
 
     def get_files(self) -> List[File]:
         return get_local_files(self.session)
+
+    def get_messages(self) -> List[Message]:
+        return get_local_messages(self.session)

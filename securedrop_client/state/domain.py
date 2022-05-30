@@ -28,7 +28,7 @@ class File:
 
     @property
     def id(self) -> FileId:
-        """A unique identifier file set by the server (opaque string)."""
+        """A unique file identifier set by the server (opaque string)."""
         return self._id
 
     @property
@@ -39,3 +39,19 @@ class File:
     @is_downloaded.setter
     def is_downloaded(self, value: bool) -> None:
         self._is_downloaded = value
+
+
+class MessageId(str):
+    """Identifies a message."""
+
+    pass
+
+
+class Message:
+    def __init__(self, id: MessageId) -> None:
+        self._id: MessageId = id
+
+    @property
+    def id(self) -> MessageId:
+        """A unique message identifier set by the server (opaque string)."""
+        return self._id

@@ -11,7 +11,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from securedrop_client.database import Database
 
-from .domain import ConversationId, File, FileId, SourceId
+from .domain import ConversationId, File, FileId, Message, MessageId, SourceId
 
 
 class State(QObject):
@@ -26,7 +26,9 @@ class State(QObject):
     def __init__(self, database: Optional[Database] = None) -> None:
         super().__init__()
         self._files: Dict[FileId, File] = {}
+        self._messages: Dict[MessageId, Message] = {}
         self._conversation_files: Dict[ConversationId, List[File]] = {}
+        self._conversation_messages: Dict[ConversationId, List[Message]] = {}
         self._selected_conversation: Optional[ConversationId] = None
 
         if database is not None:
@@ -42,6 +44,11 @@ class State(QObject):
                 known_file = self.file(file_id)
                 if known_file is not None:
                     known_file.is_downloaded = True
+        persisted_messages = database.get_messages()
+        for persisted_message in persisted_messages:
+            conversation_id = ConversationId(persisted_message.source.uuid)
+            message_id = MessageId(persisted_message.uuid)
+            self.add_message(conversation_id, message_id)
 
     def add_file(self, cid: ConversationId, fid: FileId) -> None:
         file = File(fid)  # store references to the same object
@@ -61,18 +68,47 @@ class State(QObject):
                 self.selected_conversation_changed.emit()
                 self.selected_conversation_files_changed.emit()
 
+    def add_message(self, cid: ConversationId, mid: MessageId) -> None:
+        message = Message(mid)  # store references to the same object
+        if mid not in self._messages.keys():
+            self._messages[mid] = message
+
+        if cid not in self._conversation_messages.keys():
+            self._conversation_messages[cid] = []
+
+        message_is_known = False
+        for known_message in self._conversation_messages[cid]:
+            if mid == known_message.id:
+                message_is_known = True
+        if not message_is_known:
+            self._conversation_messages[cid].append(message)
+            if cid == self._selected_conversation:
+                self.selected_conversation_changed.emit()
+
     def remove_conversation_files(self, id: ConversationId) -> None:
         self._conversation_files[id] = []
         if id == self._selected_conversation:
             self.selected_conversation_changed.emit()
             self.selected_conversation_files_changed.emit()
 
+    def remove_conversation_messages(self, id: ConversationId) -> None:
+        self._conversation_messages[id] = []
+        if id == self._selected_conversation:
+            self.selected_conversation_changed.emit()
+
     def conversation_files(self, id: ConversationId) -> List[File]:
         default: List[File] = []
         return self._conversation_files.get(id, default)
 
+    def conversation_messages(self, id: ConversationId) -> List[Message]:
+        default: List[Message] = []
+        return self._conversation_messages.get(id, default)
+
     def file(self, id: FileId) -> Optional[File]:
         return self._files.get(id, None)
+
+    def message(self, id: MessageId) -> Optional[Message]:
+        return self._messages.get(id, None)
 
     def record_file_download(self, id: FileId) -> None:
         if id not in self._files.keys():
@@ -116,8 +152,9 @@ class State(QObject):
         default: List[File] = []
         if len(self._conversation_files.get(selected_conversation_id, default)) > 0:
             return True
-        # TODO: Record and count the conversation messages, meanwhile always return True.
-        return True
+        if len(self._conversation_messages.get(selected_conversation_id, default)) > 0:
+            return True
+        return False
 
     @pyqtSlot(SourceId)
     def set_selected_conversation_for_source(self, source_id: SourceId) -> None:
