@@ -20,6 +20,7 @@ class State(QObject):
     Note: the Graphical User Interface SHOULD NOT write state, except in QActions.
     """
 
+    selected_conversation_changed = pyqtSignal()
     selected_conversation_files_changed = pyqtSignal()
 
     def __init__(self, database: Optional[Database] = None) -> None:
@@ -57,11 +58,13 @@ class State(QObject):
         if not file_is_known:
             self._conversation_files[cid].append(file)
             if cid == self._selected_conversation:
+                self.selected_conversation_changed.emit()
                 self.selected_conversation_files_changed.emit()
 
     def remove_conversation_files(self, id: ConversationId) -> None:
         self._conversation_files[id] = []
         if id == self._selected_conversation:
+            self.selected_conversation_changed.emit()
             self.selected_conversation_files_changed.emit()
 
     def conversation_files(self, id: ConversationId) -> List[File]:
@@ -76,6 +79,7 @@ class State(QObject):
             pass
         else:
             self._files[id].is_downloaded = True
+            self.selected_conversation_changed.emit()
             self.selected_conversation_files_changed.emit()
 
     @property
@@ -86,6 +90,7 @@ class State(QObject):
     @selected_conversation.setter
     def selected_conversation(self, id: Optional[ConversationId]) -> None:
         self._selected_conversation = id
+        self.selected_conversation_changed.emit()
         self.selected_conversation_files_changed.emit()
 
     @property
@@ -100,6 +105,19 @@ class State(QObject):
             if not f.is_downloaded:
                 return True
         return False
+
+    @property
+    def selected_conversation_has_files_or_messages(self) -> bool:
+        """Whether the selected conversation has any files or messages"""
+        selected_conversation_id = self._selected_conversation
+        if selected_conversation_id is None:
+            return False
+
+        default: List[File] = []
+        if len(self._conversation_files.get(selected_conversation_id, default)) > 0:
+            return True
+        # TODO: Record and count the conversation messages, meanwhile always return True.
+        return True
 
     @pyqtSlot(SourceId)
     def set_selected_conversation_for_source(self, source_id: SourceId) -> None:

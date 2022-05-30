@@ -113,6 +113,9 @@ class DeleteConversationAction(QAction):
         self._confirmation_dialog.accepted.connect(lambda: self._on_confirmation_dialog_accepted())
         self.triggered.connect(self.trigger)
 
+        self._connect_enabled_to_conversation_changes()
+        self._set_enabled_initial_value()
+
     def trigger(self) -> None:
         if self.controller.api is None:
             self.controller.on_action_requiring_login()
@@ -126,3 +129,21 @@ class DeleteConversationAction(QAction):
                 return
             self.controller.delete_conversation(self.source)
             self._state.remove_conversation_files(id)
+
+    def _connect_enabled_to_conversation_changes(self) -> None:
+        if self._state is not None:
+            self._state.selected_conversation_changed.connect(
+                self._on_selected_conversation_changed
+            )
+
+    @pyqtSlot()
+    def _on_selected_conversation_changed(self) -> None:
+        if self._state is None:
+            return
+        if self._state.selected_conversation_has_files_or_messages:
+            self.setEnabled(True)
+        else:
+            self.setEnabled(False)
+
+    def _set_enabled_initial_value(self) -> None:
+        self._on_selected_conversation_changed()
