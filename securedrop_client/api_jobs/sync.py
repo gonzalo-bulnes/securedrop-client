@@ -46,7 +46,7 @@ class MetadataSyncJob(ApiJob):
         sources, submissions, replies = get_remote_data(api_client)
         update_local_storage(session, sources, submissions, replies, self.data_dir)
         if self._state is not None:
-            _update_state(self._state, submissions)
+            _update_state(self._state, submissions, replies)
 
     def _update_users(session: Session, remote_users: List[SDKUser]) -> None:
         """
@@ -131,9 +131,16 @@ class MetadataSyncJob(ApiJob):
 def _update_state(
     app_state: state.State,
     submissions: List,
+    replies: List,
 ) -> None:
     for submission in submissions:
         if submission.is_file():
             app_state.add_file(
                 state.ConversationId(submission.source_uuid), state.FileId(submission.uuid)
             )
+        else:
+            app_state.add_message(
+                state.ConversationId(submission.source_uuid), state.MessageId(submission.uuid)
+            )
+    for reply in replies:
+        app_state.add_message(state.ConversationId(reply.source_uuid), state.MessageId(reply.uuid))

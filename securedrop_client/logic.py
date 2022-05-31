@@ -1036,6 +1036,8 @@ class Controller(QObject):
         # Delete conversation locally to ensure that it does not remain on disk until next sync
         storage.delete_local_conversation_by_source_uuid(self.session, uuid, self.data_dir)
         self.conversation_deletion_successful.emit(uuid, datetime.utcnow())
+        self._state.remove_conversation_files(state.ConversationId(uuid))
+        self._state.remove_conversation_messages(state.ConversationId(uuid))
 
     def on_delete_conversation_failure(self, e: Exception) -> None:
         if isinstance(e, DeleteConversationJobException):
