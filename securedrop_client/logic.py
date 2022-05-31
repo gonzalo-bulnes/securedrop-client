@@ -1152,6 +1152,9 @@ class Controller(QObject):
         self.session.commit()
         reply = storage.get_reply(self.session, reply_uuid)
         self.reply_succeeded.emit(reply.source.uuid, reply_uuid, reply.content)
+        self._state.add_message(
+            state.ConversationId(reply.source.uuid), state.MessageId(reply_uuid)
+        )
 
     def on_reply_failure(
         self, exception: Union[SendReplyJobError, SendReplyJobTimeoutError]
