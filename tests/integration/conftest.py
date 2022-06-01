@@ -2,7 +2,7 @@ import pytest
 from PyQt5.QtWidgets import QApplication
 
 from securedrop_client.gui.base import ModalDialog
-from securedrop_client.gui.conversation import ExportFileDialog, PrintFileDialog
+from securedrop_client.gui.conversation import ExportDevice, ExportFileDialog, PrintFileDialog
 from securedrop_client.gui.main import Window
 from securedrop_client.logic import Controller
 from tests import factory
@@ -118,7 +118,8 @@ def print_dialog(mocker, homedir):
     gui.setup(controller)
     gui.login_dialog.close()
     app.setActiveWindow(gui)
-    dialog = PrintFileDialog(controller, "file_uuid", "file_name")
+    export_device = ExportDevice(controller)
+    dialog = PrintFileDialog(export_device, "file_uuid", "file_name")
 
     yield dialog
 
@@ -137,7 +138,8 @@ def export_dialog(mocker, homedir):
     gui.setup(controller)
     gui.login_dialog.close()
     app.setActiveWindow(gui)
-    dialog = ExportFileDialog(controller, "file_uuid", "file_name")
+    export_device = ExportDevice(controller)
+    dialog = ExportFileDialog(export_device, "file_uuid", "file_name")
     dialog.show()
 
     yield dialog
