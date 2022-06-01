@@ -48,11 +48,5 @@ class Archive:
 
     def export(self, temp_dir: Optional[TemporaryDirectory] = None) -> QVM.Status:
         """Send the archive to export VM (sd-devices) for automated USB disk export."""
-
-        if temp_dir is not None:
-            _temp_dir: TemporaryDirectory = temp_dir
-        else:
-            _temp_dir = TemporaryDirectory()
-
-        exportable_archive = self._save(_temp_dir)
+        exportable_archive = self._save(temp_dir)
         return QVM.open_in_export_vm(exportable_archive.path)
