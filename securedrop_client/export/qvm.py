@@ -28,17 +28,7 @@ class QVM:
         SUBPROCESS_ERROR = "CALLED_PROCESS_ERROR"
 
     @classmethod
-    def export(cls, unsafe_file_path: str) -> Status:
-        """Send a file to the export VM (sd-devices) aiming at saving it to a USB drive."""
-        return cls._open_in_export_vm(unsafe_file_path)
-
-    @classmethod
-    def print(cls, unsafe_file_path: str) -> Status:
-        """Send a file to the export VM (sd-devices) aiming at printing it."""
-        return cls._open_in_export_vm(unsafe_file_path)
-
-    @classmethod
-    def _open_in_export_vm(cls, unsafe_file_path: str) -> Status:
+    def open_in_export_vm(cls, unsafe_file_path: str) -> Status:
         """Send a file to the export VM (sd-devices)."""
 
         # There are already talks of switching to a QVM-RPC implementation for unlocking devices
