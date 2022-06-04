@@ -279,7 +279,7 @@ def test_Device_export_file_to_usb_drive_not_qubes(homedir, mocker, session):
         device = Device(controller, export_service_thread)
         controller.qubes = False
         export_requested_emissions = QSignalSpy(device.export_requested)
-        device._export.send_file_to_usb_device = mocker.MagicMock()
+        device._export = mocker.MagicMock(spec=Export)
         file = factory.File(source=factory.Source())
         session.add(file)
         session.commit()
