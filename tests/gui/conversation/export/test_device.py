@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from PyQt5.QtCore import QThread
 from PyQt5.QtTest import QSignalSpy
 
-from securedrop_client.export import Export
+from securedrop_client.export import Export as ExportService
 from securedrop_client.gui.conversation.export import Device
 from securedrop_client.logic import Controller
 from tests import factory
@@ -63,7 +63,7 @@ def test_Device_run_print_file(mocker, session, homedir):
     controller = Controller("http://localhost/", gui, session, homedir, None)
     with thread() as export_service_thread:
         device = Device(controller, export_service_thread)
-        device._export = mocker.MagicMock(spec=Export)
+        device._export_service = mocker.MagicMock(spec=ExportService)
         print_requested_emissions = QSignalSpy(device.print_requested)
         file = factory.File(source=factory.Source())
         session.add(file)
@@ -160,7 +160,7 @@ def test_Device_print_file_when_orig_file_already_exists(
     with thread() as export_service_thread:
         device = Device(controller, export_service_thread)
         file = factory.File(source=factory.Source())
-        device._export = mocker.MagicMock(spec=Export)
+        device._export_service = mocker.MagicMock(spec=ExportService)
         print_requested_emissions = QSignalSpy(device.print_requested)
         session.add(file)
         session.commit()
@@ -207,7 +207,7 @@ def test_Device_run_export_preflight_checks(homedir, mocker, session, source):
     controller = Controller("http://localhost/", gui, session, homedir, None)
     with thread() as export_service_thread:
         device = Device(controller, export_service_thread)
-        device._export = mocker.MagicMock(spec=Export)
+        device._export_service = mocker.MagicMock(spec=ExportService)
         export_preflight_check_requested_emissions = QSignalSpy(
             device.export_preflight_check_requested
         )
@@ -252,7 +252,7 @@ def test_Device_export_file_to_usb_drive(homedir, mocker, session):
     controller = Controller("http://localhost/", gui, session, homedir, None)
     with thread() as export_service_thread:
         device = Device(controller, export_service_thread)
-        device._export = mocker.MagicMock(spec=Export)
+        device._export_service = mocker.MagicMock(spec=ExportService)
         export_requested_emissions = QSignalSpy(device.export_requested)
         file = factory.File(source=factory.Source())
         session.add(file)
@@ -279,7 +279,7 @@ def test_Device_export_file_to_usb_drive_not_qubes(homedir, mocker, session):
         device = Device(controller, export_service_thread)
         controller.qubes = False
         export_requested_emissions = QSignalSpy(device.export_requested)
-        device._export = mocker.MagicMock(spec=Export)
+        device._export_service = mocker.MagicMock(spec=ExportService)
         file = factory.File(source=factory.Source())
         session.add(file)
         session.commit()
@@ -292,7 +292,7 @@ def test_Device_export_file_to_usb_drive_not_qubes(homedir, mocker, session):
 
         device.export_file_to_usb_drive(file.uuid, "mock passphrase")
 
-        device._export.send_file_to_usb_device.assert_not_called()
+        device._export_service.send_file_to_usb_device.assert_not_called()
         assert len(export_requested_emissions) == 0
 
 
@@ -355,7 +355,7 @@ def test_Device_export_file_to_usb_drive_when_orig_file_already_exists(
     controller = Controller("http://localhost/", gui, session, homedir, None)
     with thread() as export_service_thread:
         device = Device(controller, export_service_thread)
-        device._export = mocker.MagicMock(spec=Export)
+        device._export_service = mocker.MagicMock(spec=ExportService)
         export_requested_emissions = QSignalSpy(device.export_requested)
         file = factory.File(source=factory.Source())
         session.add(file)

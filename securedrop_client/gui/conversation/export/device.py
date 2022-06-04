@@ -4,7 +4,7 @@ from typing import Optional
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
-from securedrop_client.export import Export
+from securedrop_client.export import Export as ExportService
 from securedrop_client.logic import Controller
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class Device(QObject):
 
         self._controller = controller
 
-        self._export = Export(
+        self._export_service = ExportService(
             self.export_preflight_check_requested,
             self.export_requested,
             self.print_preflight_check_requested,
@@ -44,18 +44,22 @@ class Device(QObject):
         )
 
         # Abstract the Export instance away from the GUI
-        self._export.preflight_check_call_success.connect(self.export_preflight_check_succeeded)
-        self._export.preflight_check_call_failure.connect(self.export_preflight_check_failed)
+        self._export_service.preflight_check_call_success.connect(
+            self.export_preflight_check_succeeded
+        )
+        self._export_service.preflight_check_call_failure.connect(
+            self.export_preflight_check_failed
+        )
 
-        self._export.export_usb_call_success.connect(self.export_succeeded)
-        self._export.export_usb_call_failure.connect(self.export_failed)
-        self._export.export_completed.connect(self.export_completed)
+        self._export_service.export_usb_call_success.connect(self.export_succeeded)
+        self._export_service.export_usb_call_failure.connect(self.export_failed)
+        self._export_service.export_completed.connect(self.export_completed)
 
-        self._export.printer_preflight_success.connect(self.print_preflight_check_succeeded)
-        self._export.printer_preflight_failure.connect(self.print_preflight_check_failed)
+        self._export_service.printer_preflight_success.connect(self.print_preflight_check_succeeded)
+        self._export_service.printer_preflight_failure.connect(self.print_preflight_check_failed)
 
-        self._export.print_call_failure.connect(self.print_failed)
-        self._export.print_call_success.connect(self.print_succeeded)
+        self._export_service.print_call_failure.connect(self.print_failed)
+        self._export_service.print_call_success.connect(self.print_succeeded)
 
         # Run export object in a separate thread context (a reference to the
         # thread is kept on self such that it does not get garbage collected
@@ -129,5 +133,5 @@ class Device(QObject):
         else:
             self._export_service_thread = thread
 
-        self._export.moveToThread(self._export_service_thread)
+        self._export_service.moveToThread(self._export_service_thread)
         self._export_service_thread.start()
