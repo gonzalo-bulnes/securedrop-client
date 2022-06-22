@@ -3349,7 +3349,11 @@ class SourceMenu(QMenu):
         self.addAction(DownloadConversation(self, self.controller, app_state))
         self.addAction(
             ExportConversationFiles(
-                self, self.controller, app_state, conversation.ExportMultipleFilesDialog
+                self.source,
+                self,
+                self.controller,
+                conversation.ExportMultipleFilesDialog,
+                app_state,
             )
         )
         self.addAction(

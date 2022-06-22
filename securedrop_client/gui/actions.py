@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QAction, QDialog, QMenu
 
 from securedrop_client import state
 from securedrop_client.db import Source
+from securedrop_client.gui import conversation
 from securedrop_client.logic import Controller
 
 
@@ -136,7 +137,7 @@ class ExportConversationFiles(QAction):
         source: Source,
         parent: QMenu,
         controller: Controller,
-        confirmation_dialog: Callable[[Source], QDialog],
+        confirmation_dialog: Callable[[conversation.ExportDevice], QDialog],
         app_state: Optional[state.State] = None,
     ) -> None:
         self._controller = controller

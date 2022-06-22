@@ -15,6 +15,54 @@ from securedrop_client.gui.base.checkbox import SDCheckBox
 from .device import Device
 
 
+class ExportMultipleFilesDialog(ModalDialog):
+    def __init__(self, device: Device) -> None:
+        super().__init__()
+        self.setStyleSheet(self.DIALOG_CSS)
+
+        self._device = device
+
+        self._device.export_preflight_check_succeeded.connect(
+            self._on_export_preflight_check_succeeded
+        )
+        self._device.export_preflight_check_failed.connect(self._on_export_preflight_check_failed)
+
+        starting_header = _(
+            "Preparing to export:"
+            "<br />"
+            '<span style="font-weight:normal">{}</span>'.format(self.file_name)
+        )
+        starting_message = _(
+            "<h2>Understand the risks before exporting files</h2>"
+            "<b>Malware</b>"
+            "<br />"
+            "This workstation lets you open files securely. If you open files on another "
+            "computer, any embedded malware may spread to your computer or network. If you are "
+            "unsure how to manage this risk, please print the file, or contact your "
+            "administrator."
+            "<br /><br />"
+            "<b>Anonymity</b>"
+            "<br />"
+            "Files submitted by sources may contain information or hidden metadata that "
+            "identifies who they are. To protect your sources, please consider redacting files "
+            "before working with them on network-connected computers."
+        )
+
+        self.header.setText(starting_header)
+        self.body.setText(starting_message)
+        self.adjustSize()
+        self.start_animate_header()
+        self._run_preflight()
+
+    @pyqtSlot()
+    def _on_export_preflight_check_succeeded(self) -> None:
+        print("Initial check succeeded: device found.")
+
+    @pyqtSlot()
+    def _on_export_preflight_check_failed(self) -> None:
+        print("Initial check failed: device not found.")
+
+
 class ExportDialog(ModalDialog):
 
     DIALOG_CSS = resource_string(__name__, "dialog.css").decode("utf-8")
