@@ -74,7 +74,7 @@ class DeleteSourceAction(QAction):
     ) -> None:
         self.source = source
         self.controller = controller
-        self.text = _("Delete Source Account")
+        self.text = _("Delete Source Account...")
 
         super().__init__(self.text, parent)
 
@@ -105,7 +105,7 @@ class DeleteConversationAction(QAction):
         self.source = source
         self.controller = controller
         self._state = app_state
-        self.text = _("Delete All Files and Messages")
+        self.text = _("Delete All Files and Messages...")
 
         super().__init__(self.text, parent)
 
@@ -141,7 +141,7 @@ class ExportConversationFiles(QAction):
     ) -> None:
         self._controller = controller
         self._state = app_state
-        self._text = _("All Files")  # same as DownloadConversation because the verb is missing :(
+        self._text = _("Export All Files...")
         super().__init__(self._text, parent)
 
         self._passphrase: Optional[str] = None
