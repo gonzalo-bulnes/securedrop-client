@@ -3346,12 +3346,14 @@ class SourceMenu(QMenu):
 
         self.setStyleSheet(self.SOURCE_MENU_CSS)
 
+        self._export_device = conversation.ExportDevice(controller, controller.export_thread)
+
         self.addAction(DownloadConversation(self, self.controller, app_state))
         self.addAction(
             ExportConversationFiles(
                 self.source,
                 self,
-                self.controller,
+                self._export_device,
                 conversation.ExportMultipleFilesDialog,
                 app_state,
             )
