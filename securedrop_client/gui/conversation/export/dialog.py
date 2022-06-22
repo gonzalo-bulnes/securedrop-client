@@ -16,7 +16,7 @@ from .device import Device
 
 
 class ExportMultipleFilesDialog(ModalDialog):
-    def __init__(self, device: Device) -> None:
+    def __init__(self, device: Device, source_codename: str) -> None:
         super().__init__()
         self.setStyleSheet(self.DIALOG_CSS)
 
@@ -30,7 +30,7 @@ class ExportMultipleFilesDialog(ModalDialog):
         starting_header = _(
             "Preparing to export:"
             "<br />"
-            '<span style="font-weight:normal">{}</span>'.format(self.file_name)
+            '<span style="font-weight:normal">all the files sent by {}</span>'.format(source_codename)
         )
         starting_message = _(
             "<h2>Understand the risks before exporting files</h2>"
@@ -52,7 +52,7 @@ class ExportMultipleFilesDialog(ModalDialog):
         self.body.setText(starting_message)
         self.adjustSize()
         self.start_animate_header()
-        self._run_preflight()
+        self._device.run_export_preflight_checks()
 
     @pyqtSlot()
     def _on_export_preflight_check_succeeded(self) -> None:

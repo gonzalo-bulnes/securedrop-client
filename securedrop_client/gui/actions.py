@@ -137,7 +137,7 @@ class ExportConversationFiles(QAction):
         source: Source,
         parent: QMenu,
         export_device: conversation.ExportDevice,
-        confirmation_dialog: Callable[[conversation.ExportDevice], QDialog],
+        confirmation_dialog: Callable[[conversation.ExportDevice, str], QDialog],
         app_state: Optional[state.State] = None,
     ) -> None:
         self._state = app_state
@@ -146,8 +146,8 @@ class ExportConversationFiles(QAction):
 
         self._passphrase: Optional[str] = None
 
-        self._confirmation_dialog = confirmation_dialog(export_device)
-        self._confirmation_dialog.passphrase_submitted.connect(self._on_passphrase_submitted)
+        self._confirmation_dialog = confirmation_dialog(export_device, source.journalist_designation)
+        #self._confirmation_dialog.passphrase_submitted.connect(self._on_passphrase_submitted)
         self._confirmation_dialog.accepted.connect(lambda: self._on_confirmation_dialog_accepted())
         self._confirmation_dialog.rejected.connect(lambda: self._on_confirmation_dialog_rejected())
         self.triggered.connect(self.trigger)
