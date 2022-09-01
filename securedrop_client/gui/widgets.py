@@ -2192,6 +2192,7 @@ class FileWidget(QWidget):
         index: int,
         container_width: int,
         export_service: Optional[export.Service] = None,
+        app_state: Optional[state.State] = None,
     ) -> None:
         """
         Given some text and a reference to the controller, make something to display a file.
@@ -2262,7 +2263,12 @@ class FileWidget(QWidget):
         file_options_layout.addWidget(self.print_button)
 
         self.download_button.installEventFilter(self)
-        self.export_button.clicked.connect(self._on_export_clicked)
+        # self.export_button.clicked.connect(self._on_export_clicked)
+
+        export_action = actions.ExportConversationFile(
+            self, self.file.location(self.controller.data_dir), self.controller, app_state
+        )
+        self.export_button.clicked.connect(export_action.triggered)
         self.print_button.clicked.connect(self._on_print_clicked)
 
         self.file_name = SecureQLabel(
@@ -2618,6 +2624,7 @@ class ConversationView(QWidget):
         source_db_object: Source,
         controller: Controller,
         export_service: Optional[export.Service] = None,
+        app_state: Optional[state.State] = None,
     ) -> None:
         super().__init__()
 
@@ -2626,6 +2633,7 @@ class ConversationView(QWidget):
         self.source = source_db_object
         self.source_uuid = source_db_object.uuid
         self.controller = controller
+        self._app_state = app_state
 
         self.controller.sync_started.connect(self._on_sync_started)
         controller.conversation_deletion_successful.connect(
@@ -2809,6 +2817,7 @@ class ConversationView(QWidget):
             index,
             self.scroll.widget().width(),
             self._export_service,
+            self._app_state,
         )
         self.scroll.add_widget_to_conversation(index, conversation_item, Qt.AlignLeft)
         self.current_messages[file.uuid] = conversation_item
@@ -2942,7 +2951,7 @@ class SourceConversationWrapper(QWidget):
 
         # Create widgets
         self.conversation_title_bar = SourceProfileShortWidget(source, controller, app_state)
-        self.conversation_view = ConversationView(source, controller, export_service)
+        self.conversation_view = ConversationView(source, controller, export_service, app_state)
         self.reply_box = ReplyBoxWidget(source, controller)
         self.deletion_indicator = SourceDeletionIndicator()
         self.conversation_deletion_indicator = ConversationDeletionIndicator()

@@ -14,7 +14,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.9.1\n"
 
 msgid "{application_name} is already running"
 msgstr ""
@@ -66,6 +66,12 @@ msgid "Delete Source Account…"
 msgstr ""
 
 msgid "Delete All Files and Messages…"
+msgstr ""
+
+msgid "EXPORT"
+msgstr ""
+
+msgid "This action would export {file}"
 msgstr ""
 
 msgid "SecureDrop Client {}"
@@ -123,9 +129,6 @@ msgid "Failed to send"
 msgstr ""
 
 msgid " DOWNLOAD"
-msgstr ""
-
-msgid "EXPORT"
 msgstr ""
 
 msgid "PRINT"
