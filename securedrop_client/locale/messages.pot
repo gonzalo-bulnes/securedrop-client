@@ -71,9 +71,6 @@ msgstr ""
 msgid "EXPORT"
 msgstr ""
 
-msgid "This action would export {file}"
-msgstr ""
-
 msgid "SecureDrop Client {}"
 msgstr ""
 

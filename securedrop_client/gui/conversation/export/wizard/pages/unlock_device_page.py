@@ -91,7 +91,7 @@ class UnlockDevicePage(QWizardPage):
         self.failure_message = failure_message
 
     def isComplete(self) -> bool:
-        return self.wizard().device_unlocked
+        return self.wizard().device_unlocked()
 
     @pyqtSlot()
     def _start_unlocking(self) -> None:

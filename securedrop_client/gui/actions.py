@@ -8,7 +8,7 @@ from gettext import gettext as _
 from typing import Callable, Optional
 
 from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtWidgets import QAction, QDialog, QMenu, QMessageBox
+from PyQt5.QtWidgets import QAction, QDialog, QMenu, QWizard
 
 from securedrop_client import state
 from securedrop_client.db import Source
@@ -138,6 +138,7 @@ class ExportConversationFile(QAction):
         self,
         parent: QMenu,
         file_path: str,
+        wizard: Callable[[str], QWizard],
         controller: Controller,
         app_state: Optional[state.State] = None,
     ) -> None:
@@ -161,9 +162,8 @@ class ExportConversationFile(QAction):
             if self._state is not None:
                 if not self._conversation_selected() or not self._file_downloaded():
                     return
-                dialog = QMessageBox()
-                dialog.setText(_("This action would export {file}").format(file=self._file_path))
-                dialog.exec()
+                wizard = self._wizard(self._file_path)
+                wizard.show()
 
     def _conversation_selected(self) -> bool:
         return True

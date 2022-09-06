@@ -2205,9 +2205,11 @@ class FileWidget(QWidget):
             # Note that injecting an export service that runs in a separate
             # thread is greatly encouraged! But it is optional because strictly
             # speaking it is not a dependency of this FileWidget.
-            export_service = export.Service()
+            _export_service = export.Service()
+        else:
+            _export_service = export_service
 
-        self._export_device = conversation.ExportDevice(controller, export_service)
+        self._export_device = conversation.ExportDevice(controller, _export_service)
 
         self.file = self.controller.get_file(file_uuid)
         self.uuid = file_uuid
@@ -2266,9 +2268,14 @@ class FileWidget(QWidget):
         # self.export_button.clicked.connect(self._on_export_clicked)
 
         export_action = actions.ExportConversationFile(
-            self, self.file.location(self.controller.data_dir), self.controller, app_state
+            self,
+            self.file.location(self.controller.data_dir),
+            lambda file: conversation.ExportWizard(self._export_device, _export_service),
+            self.controller,
+            app_state,
         )
         self.export_button.clicked.connect(export_action.triggered)
+
         self.print_button.clicked.connect(self._on_print_clicked)
 
         self.file_name = SecureQLabel(
