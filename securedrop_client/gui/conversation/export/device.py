@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import NewType
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -17,6 +18,20 @@ class Device(QObject):
     with the underlying export service.
     """
 
+    # These two signals and states are part of the device public API,
+    # along with the public methods.
+    state_changed = pyqtSignal(str)
+    unlocking_started = pyqtSignal(str)
+
+    State = NewType("State", str)
+    UnknownState = State("unknown")
+    MissingState = State("missing")
+    LockedState = State("locked")
+    UnlockingState = State("unlocking")
+    UnlockedState = State("unlocked")
+    RemovedState = State("removed")
+
+    # The following signals are part of the DEPRECATED legacy API.
     export_preflight_check_requested = pyqtSignal()
     export_preflight_check_succeeded = pyqtSignal()
     export_preflight_check_failed = pyqtSignal(object)
