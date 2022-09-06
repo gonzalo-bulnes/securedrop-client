@@ -1,4 +1,6 @@
 import os
+import unittest
+from unittest import mock
 
 from PyQt5.QtTest import QSignalSpy
 
@@ -8,6 +10,7 @@ from securedrop_client.gui.conversation.export import Device
 from securedrop_client.gui.main import Window
 from securedrop_client.logic import Controller
 from tests import factory
+from tests.helper import app  # noqa: F401
 
 
 def no_session():
@@ -244,3 +247,39 @@ def test_Device_export_file_to_usb_drive_when_orig_file_already_exists(
 
         assert len(export_requested_emissions) == 1
         controller.get_file.assert_called_with(file.uuid)
+
+
+class TestDevice(unittest.TestCase):
+    def setUp(self):
+        controller = mock.MagicMock(spec=Controller)
+        export_service = export.Service()
+        self.device = Device(controller, export_service)
+        state_machine_started = QSignalSpy(self.device._state._machine.started)
+        state_machine_started.wait(1000)
+
+    def test_state_default_to_unknown_state(self):
+        assert self.device.state == Device.UnknownState
+
+    def test_state_is_missing_if_device_not_found(self):
+        state_changed_emissions = QSignalSpy(self.device.state_changed)
+
+        self.device.not_found.emit()
+
+        assert len(state_changed_emissions) == 1
+        assert self.device.state == Device.MissingState
+
+    def test_state_is_locked_if_device_found_locked(self):
+        state_changed_emissions = QSignalSpy(self.device.state_changed)
+
+        self.device.found_locked.emit()
+
+        assert len(state_changed_emissions) == 1
+        assert self.device.state == Device.LockedState
+
+    def test_state_is_unlocked_if_device_found_unlocked(self):
+        state_changed_emissions = QSignalSpy(self.device.state_changed)
+
+        self.device.found_unlocked.emit()
+
+        assert len(state_changed_emissions) == 1
+        assert self.device.state == Device.UnlockedState
