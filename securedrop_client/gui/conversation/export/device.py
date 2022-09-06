@@ -22,6 +22,7 @@ class Device(QObject):
     # along with the public methods.
     state_changed = pyqtSignal(str)
     unlocking_started = pyqtSignal(str)
+    unlocking_failed = pyqtSignal()
 
     State = NewType("State", str)
     UnknownState = State("unknown")
