@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QObject
 from PyQt5.QtWidgets import QWidget, QWizard
 
 from securedrop_client import export
@@ -12,6 +12,9 @@ from .pages import ExportPage, InsertDevicePage, ReviewDataPage, StartPage, Unlo
 class Wizard(QWizard):
 
     PageId = IntEnum("PageId", "START INSERT_DEVICE UNLOCK_DEVICE REVIEW_DATA EXPORT")
+
+    def setFile(self, file_path: str) -> None:
+        print("FILE", file_path)
 
     def __init__(self, device: Device, export_service: export.Service, parent: QWidget = None):
         super().__init__(parent)

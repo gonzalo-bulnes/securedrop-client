@@ -163,7 +163,8 @@ class ExportConversationFile(QAction):
                 if not self._conversation_selected() or not self._file_downloaded():
                     return
                 wizard = self._wizard(self._file_path)
-                wizard.show()
+                wizard.setFile(self._file_path)
+                wizard.exec()
 
     def _conversation_selected(self) -> bool:
         return True
