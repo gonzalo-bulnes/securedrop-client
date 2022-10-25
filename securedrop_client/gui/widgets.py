@@ -20,7 +20,8 @@ import html
 import logging
 from datetime import datetime
 from gettext import gettext as _
-from typing import Dict, List, Optional, Union  # noqa: F401
+from pathlib import Path
+from typing import Callable, Dict, List, Optional, Union
 from uuid import uuid4
 
 import arrow
@@ -2191,7 +2192,7 @@ class FileWidget(QWidget):
         file_missing: pyqtBoundSignal,
         index: int,
         container_width: int,
-        export_service: Optional[export.Service] = None,
+        export_device: Optional[conversation.ExportDevice] = None,
     ) -> None:
         """
         Given some text and a reference to the controller, make something to display a file.
@@ -2200,13 +2201,15 @@ class FileWidget(QWidget):
 
         self.controller = controller
 
-        if export_service is None:
+        if export_device is None:
             # Note that injecting an export service that runs in a separate
             # thread is greatly encouraged! But it is optional because strictly
             # speaking it is not a dependency of this FileWidget.
             export_service = export.Service()
 
-        self._export_device = conversation.ExportDevice(controller, export_service)
+            self._export_device = conversation.ExportDevice(controller, export_service)
+        else:
+            self._export_device = export_device
 
         self.file = self.controller.get_file(file_uuid)
         self.uuid = file_uuid
@@ -2941,8 +2944,21 @@ class SourceConversationWrapper(QWidget):
         layout.setSpacing(0)
 
         # Create widgets
-        self.conversation_title_bar = SourceProfileShortWidget(source, controller, app_state)
-        self.conversation_view = ConversationView(source, controller, export_service)
+        if export_service is None:
+            # Note that injecting an export service that runs in a separate
+            # thread is greatly encouraged! But it is optional because strictly
+            # speaking it is not a dependency of this FileWidget.
+            export_service = export.Service()
+
+        export_device = conversation.ExportDevice(controller, export_service)
+
+        def print_conversation(path: Path) -> None:
+            export_device.print_requested.emit([str(path)])  # pragma: nocover
+
+        self.conversation_title_bar = SourceProfileShortWidget(
+            source, controller, app_state, print_conversation
+        )
+        self.conversation_view = ConversationView(source, controller, export_device)
         self.reply_box = ReplyBoxWidget(source, controller)
         self.deletion_indicator = SourceDeletionIndicator()
         self.conversation_deletion_indicator = ConversationDeletionIndicator()
@@ -3360,7 +3376,11 @@ class SourceMenu(QMenu):
     SOURCE_MENU_CSS = load_css("source_menu.css")
 
     def __init__(
-        self, source: Source, controller: Controller, app_state: Optional[state.State]
+        self,
+        source: Source,
+        controller: Controller,
+        app_state: Optional[state.State],
+        print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
         self.source = source
@@ -3369,6 +3389,16 @@ class SourceMenu(QMenu):
         self.setStyleSheet(self.SOURCE_MENU_CSS)
 
         self.addAction(actions.DownloadConversation(self, self.controller, app_state))
+        self.addAction(
+            actions.PrintConversation(
+                self.source,
+                self,
+                self.controller,
+                print_conversation,
+                DeleteConversationDialog,
+                app_state,
+            )
+        )
         self.addAction(
             actions.DeleteConversation(
                 self.source, self, self.controller, DeleteConversationDialog, app_state
@@ -3384,7 +3414,11 @@ class SourceMenuButton(QToolButton):
     """
 
     def __init__(
-        self, source: Source, controller: Controller, app_state: Optional[state.State]
+        self,
+        source: Source,
+        controller: Controller,
+        app_state: Optional[state.State],
+        print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -3395,7 +3429,7 @@ class SourceMenuButton(QToolButton):
         self.setIcon(load_icon("ellipsis.svg"))
         self.setIconSize(QSize(22, 33))  # Make it taller than the svg viewBox to increase hitbox
 
-        self.menu = SourceMenu(self.source, self.controller, app_state)
+        self.menu = SourceMenu(self.source, self.controller, app_state, print_conversation)
         self.setMenu(self.menu)
 
         self.setPopupMode(QToolButton.InstantPopup)
@@ -3436,7 +3470,11 @@ class SourceProfileShortWidget(QWidget):
     VERTICAL_MARGIN = 14
 
     def __init__(
-        self, source: Source, controller: Controller, app_state: Optional[state.State]
+        self,
+        source: Source,
+        controller: Controller,
+        app_state: Optional[state.State],
+        print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
 
@@ -3459,7 +3497,7 @@ class SourceProfileShortWidget(QWidget):
         )
         title = TitleLabel(self.source.journalist_designation)
         self.updated = LastUpdatedLabel(_(arrow.get(self.source.last_updated).format("MMM D")))
-        menu = SourceMenuButton(self.source, self.controller, app_state)
+        menu = SourceMenuButton(self.source, self.controller, app_state, print_conversation)
         header_layout.addWidget(title, alignment=Qt.AlignLeft)
         header_layout.addStretch()
         header_layout.addWidget(self.updated, alignment=Qt.AlignRight)

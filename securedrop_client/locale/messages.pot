@@ -77,6 +77,9 @@ msgstr ""
 msgid "Delete All Files and Messages"
 msgstr ""
 
+msgid "Print Conversation"
+msgstr ""
+
 msgid "SecureDrop Client {}"
 msgstr ""
 

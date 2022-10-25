@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -73,6 +74,75 @@ class DeleteConversationTest(unittest.TestCase):
 
         assert not self._controller.delete_conversation.called
         assert not self._app_state.remove_conversation_files.called
+
+
+class PrintConversationTest(unittest.TestCase):
+    def setUp(self):
+        self._source = factory.Source()
+        _menu = QMenu()
+        self._controller = MagicMock(Controller, api=True, data_dir="/data")
+        self._app_state = MagicMock(
+            state.State, selected_conversation=state.ConversationId("some_conversation")
+        )
+        self._dialog = QDialog()
+
+        def _dialog_constructor(source: Source) -> QDialog:
+            return self._dialog
+
+        def _print_conversation_template(path: Path) -> None:
+            pass
+
+        self._print_conversation = MagicMock()
+
+        self.action = actions.PrintConversation(
+            self._source,
+            _menu,
+            self._controller,
+            self._print_conversation,
+            _dialog_constructor,
+            self._app_state,
+        )
+
+    def test_prints_conversation_when_dialog_accepted(self):
+        self._controller.data_dir = "/tmp"
+        # Accept the confimation dialog from a separate thread.
+        QTimer.singleShot(10, self._dialog.accept)
+
+        self.action.trigger()
+
+        expected_path = Path("/tmp/testy-mctestface/conversation.txt")
+        self._print_conversation.assert_called_once_with(expected_path)
+
+    def test_does_not_print_conversation_when_dialog_rejected(self):
+        # Reject the confimation dialog from a separate thread.
+        QTimer.singleShot(10, self._dialog.reject)
+
+        self.action.trigger()
+
+        assert not self._print_conversation.called
+
+    def test_requires_authenticated_journalist(self):
+        controller = mock.MagicMock(Controller, api=None)  # no authenticated user
+        self.action._controller = controller
+
+        confirmation_dialog = mock.MagicMock(QDialog)
+        self.action._confirmation_dialog = confirmation_dialog
+
+        self.action.trigger()
+
+        assert not confirmation_dialog.exec.called
+        assert not self._print_conversation.called
+        controller.on_action_requiring_login.assert_called_once()
+
+    def test_prints_nothing_if_no_conversation_is_selected(self):
+        self._app_state.selected_conversation = None
+
+        # Accept the confimation dialog from a separate thread.
+        QTimer.singleShot(10, self._dialog.accept)
+
+        self.action.trigger()
+
+        assert not self._print_conversation.called
 
 
 class DeleteSourceTest(unittest.TestCase):
