@@ -59,6 +59,15 @@ msgstr ""
 msgid "Failed to delete source at server"
 msgstr ""
 
+msgid "{username} sent:"
+msgstr ""
+
+msgid "File: {filename}"
+msgstr ""
+
+msgid "{username} wrote:"
+msgstr ""
+
 msgid "Download All Files"
 msgstr ""
 
