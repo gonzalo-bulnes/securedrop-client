@@ -16,7 +16,7 @@ _ENTRY_SEPARATOR = "------\n"
 class Transcript:
     def __init__(self, conversation: database.Source) -> None:
 
-        self._items = [transcribe(record) for record in conversation.server_collection]
+        self._items = [transcribe(record) for record in conversation.collection]
 
     def __str__(self) -> str:
         if len(self._items) <= 0:

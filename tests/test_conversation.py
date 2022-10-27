@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 from textwrap import dedent
 
 from securedrop_client import conversation
@@ -77,6 +78,8 @@ class TestConversationTranscript(unittest.TestCase):
         ]
         draft_reply = database.DraftReply(
             content="Let me think...",
+            file_counter=2,
+            timestamp=datetime.now(),
         )
         source.files = files
         source.messages = messages
