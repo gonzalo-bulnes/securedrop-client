@@ -59,13 +59,13 @@ msgstr ""
 msgid "Failed to delete source at server"
 msgstr ""
 
-msgid "{username} sent:"
+msgid "{username} sent:\n"
 msgstr ""
 
-msgid "File: {filename}"
+msgid "File: {filename}\n"
 msgstr ""
 
-msgid "{username} wrote:"
+msgid "{username} wrote:\n"
 msgstr ""
 
 msgid "Download All Files"
