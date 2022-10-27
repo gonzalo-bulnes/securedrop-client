@@ -27,6 +27,9 @@ class Transcript:
         context: Optional[str] = None
 
         for item in self._items:
+            if item is None:
+                continue
+
             if context is not None and context == item.context:
                 entry = item.transcript
             else:

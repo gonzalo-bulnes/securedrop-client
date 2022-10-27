@@ -24,6 +24,3 @@ class Message(Item):
     @property
     def transcript(self) -> str:
         return self.content + "\n"
-
-    def __str__(self):
-        return f"Sent by {self.sender}: {self.content}"
