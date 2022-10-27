@@ -12,8 +12,10 @@ class File(Item):
         self.filename = record.filename
         self.sender = record.source.journalist_designation
 
-    def metadata(self) -> str:
-        return _("{username} sent:").format(username=self.sender)
+    @property
+    def context(self) -> str:
+        return _("{username} sent:\n").format(username=self.sender)
 
+    @property
     def transcript(self) -> str:
-        return _("File: {filename}").format(filename=self.filename)
+        return _("File: {filename}\n").format(filename=self.filename)

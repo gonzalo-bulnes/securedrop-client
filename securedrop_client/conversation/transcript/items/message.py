@@ -17,8 +17,13 @@ class Message(Item):
         else:
             self.sender = record.journalist.username
 
-    def metadata(self) -> str:
-        return _("{username} wrote:").format(username=self.sender)
+    @property
+    def context(self) -> str:
+        return _("{username} wrote:\n").format(username=self.sender)
 
+    @property
     def transcript(self) -> str:
-        return self.content
+        return self.content + "\n"
+
+    def __str__(self):
+        return f"Sent by {self.sender}: {self.content}"

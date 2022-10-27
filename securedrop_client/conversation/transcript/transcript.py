@@ -10,10 +10,30 @@ def transcribe(record: database.Base) -> Optional[Item]:
     return transcribe_item(record)
 
 
+_ENTRY_SEPARATOR = "------\n"
+
+
 class Transcript:
     def __init__(self, conversation: database.Source) -> None:
 
-        self._items: List[Item] = []
+        self._items = [transcribe(record) for record in conversation.server_collection]
 
     def __str__(self) -> str:
-        return "FIXME"
+        if len(self._items) <= 0:
+            return "No messages."
+
+        entries: List[str] = []
+
+        context: Optional[str] = None
+
+        for item in self._items:
+            if context is not None and context == item.context:
+                entry = item.transcript
+            else:
+                entry = f"{item.context}{item.transcript}"
+
+            entries.append(entry)
+
+            context = item.context
+
+        return _ENTRY_SEPARATOR.join(entries)
