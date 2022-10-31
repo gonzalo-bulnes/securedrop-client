@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class Item:
     @property
     def transcript(self) -> str:
@@ -5,6 +8,6 @@ class Item:
         raise NotImplementedError  # pragma: nocover
 
     @property
-    def context(self) -> str:
+    def context(self) -> Optional[str]:
         """Some context about the conversation item."""
         raise NotImplementedError  # pragma: nocover

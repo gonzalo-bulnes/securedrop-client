@@ -1,4 +1,5 @@
 from gettext import gettext as _
+from typing import Optional
 
 from securedrop_client import db as database
 
@@ -13,7 +14,7 @@ class File(Item):
         self.sender = record.source.journalist_designation
 
     @property
-    def context(self) -> str:
+    def context(self) -> Optional[str]:
         return _("{username} sent:\n").format(username=self.sender)
 
     @property

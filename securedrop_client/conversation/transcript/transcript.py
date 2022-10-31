@@ -32,6 +32,8 @@ class Transcript:
 
             if context is not None and context == item.context:
                 entry = item.transcript
+            elif item.context is None:
+                entry = item.transcript  # pragma: nocover
             else:
                 entry = f"{item.context}{item.transcript}"
 

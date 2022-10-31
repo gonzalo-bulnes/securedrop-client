@@ -1,5 +1,5 @@
 from gettext import gettext as _
-from typing import Union
+from typing import Optional, Union
 
 from securedrop_client import db as database
 
@@ -18,7 +18,7 @@ class Message(Item):
             self.sender = record.journalist.username
 
     @property
-    def context(self) -> str:
+    def context(self) -> Optional[str]:
         return _("{username} wrote:\n").format(username=self.sender)
 
     @property
