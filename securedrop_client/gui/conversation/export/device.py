@@ -107,3 +107,12 @@ class Device(QObject):
             return
 
         self.print_requested.emit([file_location])
+
+
+class Printer(QObject):
+
+    found = pyqtSignal(list)
+    not_found = pyqtSignal()
+
+    def __init__(self) -> None:
+        super().__init__()

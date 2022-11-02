@@ -3395,7 +3395,7 @@ class SourceMenu(QMenu):
                 self,
                 self.controller,
                 print_conversation,
-                DeleteConversationDialog,
+                lambda conversation: conversation.PrintConfirmationDialog(),
                 app_state,
             )
         )

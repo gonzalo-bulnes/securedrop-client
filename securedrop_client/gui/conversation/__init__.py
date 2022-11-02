@@ -5,4 +5,6 @@ A conversation between a source and one or more journalists.
 from .delete import DeleteConversationDialog  # noqa: F401
 from .export import Device as ExportDevice  # noqa: F401
 from .export import Dialog as ExportFileDialog  # noqa: F401
+from .export import PrintConfirmationDialog  # noqa: F401
+from .export import PrintErrorDialog  # noqa: F401
 from .export import PrintDialog as PrintFileDialog  # noqa: F401

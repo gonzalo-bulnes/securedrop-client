@@ -6,7 +6,62 @@ from PyQt5.QtCore import QSize, pyqtSlot
 from securedrop_client.export import ExportError, ExportStatus
 from securedrop_client.gui.base import ModalDialog, SecureQLabel
 
-from .device import Device
+from .device import Device, Printer
+
+
+class ConfirmationDialog(ModalDialog):
+
+    FILENAME_WIDTH_PX = 260
+
+    def __init__(self, printer: Printer, file_name: str) -> None:
+        super().__init__()
+
+        self._printer = printer
+        self._file_name = SecureQLabel(
+            file_name, wordwrap=False, max_length=self.FILENAME_WIDTH_PX
+        ).text()  # FIXME This seems like a heavy way to sanitize a string.
+
+        self._printer.found.connect(self._on_printer_found)
+        self._printer.not_found.connect(self._on_printer_not_found)
+
+        # Connect parent signals to slots
+        self.continue_button.setEnabled(False)
+        self.continue_button.clicked.connect(
+            self.accept
+        )  # FIXME The ModalDialog is more complex than needed to do this.
+
+        header = _("Print:<br />" '<span style="font-weight:normal">{}</span>').format(
+            self.file_name
+        )
+        body = _(
+            "<h2>Managing printout risks</h2>"
+            "<b>QR codes and web addresses</b>"
+            "<br />"
+            "Never type in and open web addresses or scan QR codes contained in printed "
+            "documents without taking security precautions. If you are unsure how to "
+            "manage this risk, please contact your administrator."
+            "<br /><br />"
+            "<b>Printer dots</b>"
+            "<br />"
+            "Any part of a printed page may contain identifying information "
+            "invisible to the naked eye, such as printer dots. Please carefully "
+            "consider this risk when working with or publishing scanned printouts."
+        )
+
+        self.header.setText(header)
+        self.body.setText(body)
+        self.adjustSize()
+
+    @pyqtSlot()
+    def _on_printer_found(self) -> None:
+        self.continue_button.setEnabled(True)
+
+    @pyqtSlot()
+    def _on_printer_not_found(self) -> None:
+        self.continue_button.setEnabled(True)
+
+
+ErrorDialog = ConfirmationDialog
 
 
 class PrintDialog(ModalDialog):
