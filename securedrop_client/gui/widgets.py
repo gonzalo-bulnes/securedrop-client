@@ -71,12 +71,7 @@ from securedrop_client.db import (
 )
 from securedrop_client.gui import actions, conversation
 from securedrop_client.gui.base import SecureQLabel, SvgLabel, SvgPushButton, SvgToggleButton
-from securedrop_client.gui.conversation import (
-    DeleteConversationDialog,
-    PrintConfirmationDialog,
-    PrintErrorDialog,
-)
-from securedrop_client.gui.conversation.export.device import Printer
+from securedrop_client.gui.conversation import DeleteConversationDialog
 from securedrop_client.gui.source import DeleteSourceDialog
 from securedrop_client.logic import Controller
 from securedrop_client.resources import load_css, load_icon, load_image, load_movie
@@ -2956,7 +2951,7 @@ class SourceConversationWrapper(QWidget):
             export_service = export.Service()
 
         export_device = conversation.ExportDevice(controller, export_service)
-        printer = Printer(controller, export_service)
+        printer = conversation.Printer(controller, export_service)
 
         def print_conversation(path: Path) -> None:
             export_device.print_requested.emit([str(path)])  # pragma: nocover
@@ -3386,7 +3381,7 @@ class SourceMenu(QMenu):
         source: Source,
         controller: Controller,
         app_state: Optional[state.State],
-        printer: Printer,
+        printer: conversation.Printer,
         print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
@@ -3402,8 +3397,8 @@ class SourceMenu(QMenu):
                 self,
                 self.controller,
                 printer,
-                PrintConfirmationDialog,
-                PrintErrorDialog,
+                conversation.PrintConfirmationDialog,
+                conversation.PrintErrorDialog,
             )
         )
         self.addAction(
@@ -3425,7 +3420,7 @@ class SourceMenuButton(QToolButton):
         source: Source,
         controller: Controller,
         app_state: Optional[state.State],
-        printer: Printer,
+        printer: conversation.Printer,
         print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
@@ -3482,7 +3477,7 @@ class SourceProfileShortWidget(QWidget):
         source: Source,
         controller: Controller,
         app_state: Optional[state.State],
-        printer: Printer,
+        printer: conversation.Printer,
         print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()

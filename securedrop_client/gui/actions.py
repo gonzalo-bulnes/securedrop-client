@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QAction, QDialog, QMenu
 
 from securedrop_client import conversation, state
 from securedrop_client.db import Source
-from securedrop_client.gui.conversation.export import Printer
+from securedrop_client.gui.conversation import Printer
 from securedrop_client.logic import Controller
 from securedrop_client.utils import safe_mkdir
 
@@ -150,7 +150,7 @@ class PrintConversation(QAction):
         controller: Controller,
         printer: Printer,
         confirmation_dialog: Callable[[Printer, str], QDialog],
-        error_dialog: Callable[[Printer, str], QDialog],
+        error_dialog: Callable[[str, str], QDialog],
     ) -> None:
         title = _("Print Conversation")
         super().__init__(title, parent)
