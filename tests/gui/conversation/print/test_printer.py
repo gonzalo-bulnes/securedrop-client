@@ -26,6 +26,28 @@ class TestPrinterPublicAPI(unittest.TestCase):
 
         self.assertEqual(printer.status, Printer.StatusUnknown)
 
+    def test_status_changes_are_broadcast(self):
+        controller = MagicMock(spec=Controller)
+        export_service = export.Service()
+        printer = Printer(controller, export_service)
+
+        printer_status_changed_emissions = QSignalSpy(printer.status_changed)
+        self.assertTrue(printer_status_changed_emissions.isValid())
+
+        printer.status = printer.StatusUnknown
+        self.assertEqual(len(printer_status_changed_emissions), 0)
+
+        printer.status = Printer.StatusUnreachable
+        self.assertEqual(len(printer_status_changed_emissions), 1)
+
+        printer.status = Printer.StatusReady
+        self.assertEqual(len(printer_status_changed_emissions), 2)
+        printer.status = Printer.StatusReady
+        self.assertEqual(len(printer_status_changed_emissions), 2)
+
+        printer.status = printer.StatusUnknown
+        self.assertEqual(len(printer_status_changed_emissions), 3)
+
     @patch.object(export.Service, "run_printer_preflight")
     def test_start_on_allows_to_run_preflight_checks_on_arbitrary_signal(self, _):
         controller = MagicMock(spec=Controller)
