@@ -1,3 +1,4 @@
+import time
 from gettext import gettext as _
 from typing import Optional
 
@@ -17,22 +18,17 @@ class ConfirmationDialog(ModalDialog):
         super().__init__()
 
         self._printer = printer
-        self._file_name = SecureQLabel(
-            file_name, wordwrap=False, max_length=self.FILENAME_WIDTH_PX
-        ).text()  # FIXME This seems like a heavy way to sanitize a string.
+        self._printer.status_changed.connect(self._on_printer_status_changed)
 
-        self._printer.found.connect(self._on_printer_found)
-        self._printer.not_found.connect(self._on_printer_not_found)
-
-        # Connect parent signals to slots
-        self.continue_button.setEnabled(False)
+        self.continue_button.setText("PRINT")
         self.continue_button.clicked.connect(
             self.accept
         )  # FIXME The ModalDialog is more complex than needed to do this.
 
-        header = _("Print:<br />" '<span style="font-weight:normal">{}</span>').format(
-            self.file_name
-        )
+        file_name = SecureQLabel(
+            file_name, wordwrap=False, max_length=self.FILENAME_WIDTH_PX
+        ).text()  # FIXME This seems like a heavy way to sanitize a string.
+        header = _("Print:<br />" '<span style="font-weight:normal">{}</span>').format(file_name)
         body = _(
             "<h2>Managing printout risks</h2>"
             "<b>QR codes and web addresses</b>"
@@ -49,19 +45,78 @@ class ConfirmationDialog(ModalDialog):
         )
 
         self.header.setText(header)
+        self.header_icon.update_image("printer.svg", svg_size=QSize(64, 64))
         self.body.setText(body)
         self.adjustSize()
 
-    @pyqtSlot()
-    def _on_printer_found(self) -> None:
-        self.continue_button.setEnabled(True)
+        self._body = body
+
+        self._on_printer_status_changed()
 
     @pyqtSlot()
-    def _on_printer_not_found(self) -> None:
+    def _on_printer_status_changed(self) -> None:
+        printer_status = self._printer.status
+        if printer_status == Printer.StatusUnknown:
+            self._on_printer_status_unknown()
+        elif printer_status == Printer.StatusReady:
+            self._on_printer_ready()
+        elif printer_status == Printer.StatusUnreachable:
+            self._on_printer_unreachable()
+        else:  # Printer.StatusBusy
+            self._on_printer_busy()
+
+    def _on_printer_status_unknown(self) -> None:
+        self.continue_button.setEnabled(False)
+        self.printer_start_requested.emit()
+
+        status = "<i>Waiting for printer status to be known...</i>"
+        self.body.setText("<br /><br />".join([self._body, status]))
+        self.adjustSize()
+
+    def _on_printer_ready(self) -> None:
         self.continue_button.setEnabled(True)
 
+        self.body.setText(self._body)
+        self.adjustSize()
 
-ErrorDialog = ConfirmationDialog
+    def _on_printer_unreachable(self) -> None:
+        self.continue_button.setEnabled(False)
+
+        status = "<i>Printer unreachable, please verify it's connected.</i>"
+        self.body.setText("<br /><br />".join([self._body, status]))
+        self.adjustSize()
+
+    def _on_printer_busy(self) -> None:
+        self.continue_button.setEnabled(False)
+
+        status = "<i>Printer busy, please wait a moment...</i>"
+        self.body.setText("<br /><br />".join([self._body, status]))
+        self.adjustSize()
+
+
+class ErrorDialog(ModalDialog):
+
+    FILENAME_WIDTH_PX = 260
+
+    def __init__(self, file_name: str, reason: str) -> None:
+        super().__init__()
+
+        self.continue_button.clicked.connect(
+            self.accept
+        )  # FIXME The ModalDialog is more complex than needed to do this.
+
+        file_name = SecureQLabel(
+            file_name, wordwrap=False, max_length=self.FILENAME_WIDTH_PX
+        ).text()  # FIXME This seems like a heavy way to sanitize a string.
+        reason = SecureQLabel(
+            reason, wordwrap=False, max_length=self.FILENAME_WIDTH_PX
+        ).text()  # FIXME This seems like a heavy way to sanitize a string.
+        header = _("Printing failed<br />" '<span style="font-weight:normal">{}</span>').format(file_name)
+
+        self.header.setText(header)
+        self.header_icon.update_image("printer.svg", svg_size=QSize(64, 64))
+        self.body.setText(reason)
+        self.adjustSize()
 
 
 class PrintDialog(ModalDialog):

@@ -9,11 +9,12 @@ from gettext import gettext as _
 from pathlib import Path
 from typing import Callable, Optional
 
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QAction, QDialog, QMenu
 
 from securedrop_client import conversation, state
 from securedrop_client.db import Source
+from securedrop_client.gui.conversation.export import Printer
 from securedrop_client.logic import Controller
 from securedrop_client.utils import safe_mkdir
 
@@ -134,52 +135,119 @@ class DeleteConversation(QAction):
 
 
 class PrintConversation(QAction):
-    """Use this action to print a snapshot of the messages, replies, etc.
+    """Use this action to print a transcript of the messages, replies, etc.
 
-    Includes eventual references to attached files.
+    The transcript includes references to any attached files.
     """
+
+    printer_start_requested = pyqtSignal()
+    printer_job_enqueued = pyqtSignal(str, str)
 
     def __init__(
         self,
         source: Source,
         parent: QMenu,
         controller: Controller,
-        print_conversation: Callable[[Path], None],
-        confirmation_dialog: Callable[[Source], QDialog],
-        app_state: Optional[state.State] = None,
+        printer: Printer,
+        confirmation_dialog: Callable[[Printer, str], QDialog],
+        error_dialog: Callable[[Printer, str], QDialog],
     ) -> None:
-        self._source = source
+        title = _("Print Conversation")
+        super().__init__(title, parent)
+
         self._controller = controller
-        self._print_conversation = print_conversation
-        self._state = app_state
-        self._text = _("Print Conversation")
+        self._source = source
+        self._printer = printer
+        self._create_error_dialog = error_dialog
+        self._create_confirmation_dialog = confirmation_dialog
+        self._printing_job_id = self._source.journalist_designation
 
-        super().__init__(self._text, parent)
-
-        self._confirmation_dialog = confirmation_dialog(self._source)
-        self._confirmation_dialog.accepted.connect(lambda: self._on_confirmation_dialog_accepted())
+        self._printer.job_failed.connect(self._on_printing_job_failed)
+        self._printer.job_done.connect(self._on_printing_job_done)
         self.triggered.connect(self.trigger)
 
+        self._printer.start_on(self.printer_start_requested)
+        self._printer.enqueue_job_on(self.printer_job_enqueued)
+
+    @pyqtSlot()
     def trigger(self) -> None:
         if self._controller.api is None:
             self._controller.on_action_requiring_login()
         else:
-            self._confirmation_dialog.exec()
+            self._start_printer()
+            self._confirmation_dialog = self._create_confirmation_dialog(
+                self._printer, self._transcript_display_name
+            )
+            self._confirmation_dialog.accepted.connect(self._on_confirmation_dialog_accepted)
+            self._confirmation_dialog.rejected.connect(self._on_confirmation_dialog_rejected)
+            self._confirmation_dialog.show()
 
+    @pyqtSlot()
+    def _on_confirmation_dialog_rejected(self) -> None:
+        self.setEnabled(True)
+        self._confirmation_dialog.deleteLater()
+
+    @pyqtSlot()
     def _on_confirmation_dialog_accepted(self) -> None:
-        if self._state is not None:
-            id = self._state.selected_conversation
-            if id is None:
-                return
+        self.setEnabled(False)
+        self._enqueue_printing_job(self._transcript_path)
+        self._confirmation_dialog.deleteLater()
 
-            transcript = conversation.Transcript(self._source)
-            path = Path(self._controller.data_dir).joinpath(self._source.journalist_filename)
-            safe_mkdir(path)
+    @pyqtSlot(str)
+    def _on_printing_job_done(self, job_id: str) -> None:
+        print(f"Received success signal ({job_id})")
+        if job_id != self._printing_job_id:
+            print("Skipped")
+            return
 
-            path = path.joinpath("conversation.txt")
+        self.setEnabled(True)
 
-            with open(path, "w") as f:
-                f.write(str(transcript))
+    @pyqtSlot(str, str)
+    def _on_printing_job_failed(self, job_id: str, reason: str) -> None:
+        print(f"Received failure signal ({job_id})")
+        if job_id != self._printing_job_id:
+            print("Skipped")
+            return
 
-                logger.info(f"Printing transcript of conversation ({id})")
-                self._print_conversation(path)
+        self._error_dialog = self._create_error_dialog(job_id, reason)
+        self._error_dialog.finished.connect(self._on_error_dialog_finished)
+        self._error_dialog.show()
+
+    @pyqtSlot(int)
+    def _on_error_dialog_finished(self, _result: int) -> None:
+        self.setEnabled(True)
+        self._error_dialog.deleteLater()
+
+    def _start_printer(self) -> None:
+        """Start the printer in a thread-safe manner."""
+        self.printer_start_requested.emit()
+
+    def _enqueue_printing_job(self, file_path: Path) -> None:
+        """Enqueue a printing job in a thread-safe manner."""
+
+        transcript = conversation.Transcript(self._source)
+        safe_mkdir(file_path.parent)
+
+        with open(file_path, "w") as f:
+            f.write(str(transcript))
+
+            logger.info(f"Printing transcript of conversation: ({self._transcript_display_name})")
+
+            self.printer_job_enqueued.emit(self._printing_job_id, str(file_path))
+
+    @property
+    def _transcript_path(self) -> Path:
+        """The transcript path. This is te source of truth for this data."""
+        return (
+            Path(self._controller.data_dir)
+            .joinpath(self._source.journalist_filename)
+            .joinpath("conversation.txt")
+        )
+
+    @property
+    def _transcript_display_name(self) -> str:
+        """The transcript name for display purposes.
+
+        Example: wonderful_source/conversation.txt
+        """
+        return str(self._transcript_path.relative_to(self._transcript_path.parents[1]))

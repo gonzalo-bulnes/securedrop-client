@@ -71,7 +71,12 @@ from securedrop_client.db import (
 )
 from securedrop_client.gui import actions, conversation
 from securedrop_client.gui.base import SecureQLabel, SvgLabel, SvgPushButton, SvgToggleButton
-from securedrop_client.gui.conversation import DeleteConversationDialog
+from securedrop_client.gui.conversation import (
+    DeleteConversationDialog,
+    PrintConfirmationDialog,
+    PrintErrorDialog,
+)
+from securedrop_client.gui.conversation.export.device import Printer
 from securedrop_client.gui.source import DeleteSourceDialog
 from securedrop_client.logic import Controller
 from securedrop_client.resources import load_css, load_icon, load_image, load_movie
@@ -2951,12 +2956,13 @@ class SourceConversationWrapper(QWidget):
             export_service = export.Service()
 
         export_device = conversation.ExportDevice(controller, export_service)
+        printer = Printer(controller, export_service)
 
         def print_conversation(path: Path) -> None:
             export_device.print_requested.emit([str(path)])  # pragma: nocover
 
         self.conversation_title_bar = SourceProfileShortWidget(
-            source, controller, app_state, print_conversation
+            source, controller, app_state, printer, print_conversation
         )
         self.conversation_view = ConversationView(source, controller, export_device)
         self.reply_box = ReplyBoxWidget(source, controller)
@@ -3380,6 +3386,7 @@ class SourceMenu(QMenu):
         source: Source,
         controller: Controller,
         app_state: Optional[state.State],
+        printer: Printer,
         print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
@@ -3394,9 +3401,9 @@ class SourceMenu(QMenu):
                 self.source,
                 self,
                 self.controller,
-                print_conversation,
-                lambda conversation: conversation.PrintConfirmationDialog(),
-                app_state,
+                printer,
+                PrintConfirmationDialog,
+                PrintErrorDialog,
             )
         )
         self.addAction(
@@ -3418,6 +3425,7 @@ class SourceMenuButton(QToolButton):
         source: Source,
         controller: Controller,
         app_state: Optional[state.State],
+        printer: Printer,
         print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
@@ -3429,7 +3437,7 @@ class SourceMenuButton(QToolButton):
         self.setIcon(load_icon("ellipsis.svg"))
         self.setIconSize(QSize(22, 33))  # Make it taller than the svg viewBox to increase hitbox
 
-        self.menu = SourceMenu(self.source, self.controller, app_state, print_conversation)
+        self.menu = SourceMenu(self.source, self.controller, app_state, printer, print_conversation)
         self.setMenu(self.menu)
 
         self.setPopupMode(QToolButton.InstantPopup)
@@ -3474,6 +3482,7 @@ class SourceProfileShortWidget(QWidget):
         source: Source,
         controller: Controller,
         app_state: Optional[state.State],
+        printer: Printer,
         print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
@@ -3497,7 +3506,9 @@ class SourceProfileShortWidget(QWidget):
         )
         title = TitleLabel(self.source.journalist_designation)
         self.updated = LastUpdatedLabel(_(arrow.get(self.source.last_updated).format("MMM D")))
-        menu = SourceMenuButton(self.source, self.controller, app_state, print_conversation)
+        menu = SourceMenuButton(
+            self.source, self.controller, app_state, printer, print_conversation
+        )
         header_layout.addWidget(title, alignment=Qt.AlignLeft)
         header_layout.addStretch()
         header_layout.addWidget(self.updated, alignment=Qt.AlignRight)
