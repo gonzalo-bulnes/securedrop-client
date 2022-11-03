@@ -111,11 +111,9 @@ class Export(QObject):
         if export_requested is not None:
             export_requested.connect(self.send_file_to_usb_device, type=Qt.QueuedConnection)
         if print_requested is not None:
-            print_requested.connect(self.print, type=Qt.QueuedConnection)
+            print_requested.connect(self.print)
         if print_preflight_check_requested is not None:
-            print_preflight_check_requested.connect(
-                self.run_printer_preflight, type=Qt.QueuedConnection
-            )
+            print_preflight_check_requested.connect(self.run_printer_preflight)
 
     def _export_archive(cls, archive_path: str) -> ExportStatus:
         """
