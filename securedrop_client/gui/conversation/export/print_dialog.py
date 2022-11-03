@@ -111,7 +111,9 @@ class ErrorDialog(ModalDialog):
         reason = SecureQLabel(
             reason, wordwrap=False, max_length=self.FILENAME_WIDTH_PX
         ).text()  # FIXME This seems like a heavy way to sanitize a string.
-        header = _("Printing failed<br />" '<span style="font-weight:normal">{}</span>').format(file_name)
+        header = _("Printing failed<br />" '<span style="font-weight:normal">{}</span>').format(
+            file_name
+        )
 
         self.header.setText(header)
         self.header_icon.update_image("printer.svg", svg_size=QSize(64, 64))
