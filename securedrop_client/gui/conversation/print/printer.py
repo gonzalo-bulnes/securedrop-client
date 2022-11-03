@@ -62,7 +62,7 @@ class Printer(QObject):
 
     @pyqtSlot(str, str)
     def _enqueue_job(self, id: str, file_name: str) -> None:
-        """Send a printing job to the physical printer."""
+        """Send a printing job to the print queue."""
         self._job_enqueuing_requested.emit([file_name])
 
     @pyqtSlot()
