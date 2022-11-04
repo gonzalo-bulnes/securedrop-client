@@ -6,10 +6,10 @@ from unittest.mock import MagicMock
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QDialog, QMenu
 
-from securedrop_client.gui.conversation import Printer
 from securedrop_client import state
 from securedrop_client.db import Source
 from securedrop_client.gui import actions
+from securedrop_client.gui.conversation import Printer
 from securedrop_client.logic import Controller
 from tests import factory
 from tests.helper import app  # noqa: F401
