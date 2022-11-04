@@ -62,7 +62,6 @@ class ConfirmationDialog(ModalDialog):
 
     def _on_printer_status_unknown(self) -> None:
         self.continue_button.setEnabled(False)
-        #self.printer_start_requested.emit()
 
         status = "<i>Waiting for printer status to be known...</i>"
         self.body.setText("<br /><br />".join([self._body, status]))
