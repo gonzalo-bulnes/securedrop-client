@@ -3,7 +3,7 @@ import unittest
 from PyQt5.QtTest import QSignalSpy
 
 from securedrop_client.gui import conversation
-from tests.helper import app
+from tests.helper import app  # noqa: F401
 
 
 class TestErrorDialog(unittest.TestCase):
