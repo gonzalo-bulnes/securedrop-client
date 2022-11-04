@@ -59,12 +59,10 @@ class ConfirmationDialog(ModalDialog):
             self._on_printer_ready()
         elif printer_status == Printer.StatusUnreachable:
             self._on_printer_unreachable()
-        else:  # Printer.StatusBusy
-            self._on_printer_busy()
 
     def _on_printer_status_unknown(self) -> None:
         self.continue_button.setEnabled(False)
-        self.printer_start_requested.emit()
+        #self.printer_start_requested.emit()
 
         status = "<i>Waiting for printer status to be known...</i>"
         self.body.setText("<br /><br />".join([self._body, status]))
@@ -80,12 +78,5 @@ class ConfirmationDialog(ModalDialog):
         self.continue_button.setEnabled(False)
 
         status = "<i>Printer unreachable, please verify it's connected.</i>"
-        self.body.setText("<br /><br />".join([self._body, status]))
-        self.adjustSize()
-
-    def _on_printer_busy(self) -> None:
-        self.continue_button.setEnabled(False)
-
-        status = "<i>Printer busy, please wait a moment...</i>"
         self.body.setText("<br /><br />".join([self._body, status]))
         self.adjustSize()
