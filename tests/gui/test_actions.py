@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QDialog, QMenu
 
+from securedrop_client.gui.conversation import Printer
 from securedrop_client import state
 from securedrop_client.db import Source
 from securedrop_client.gui import actions
@@ -86,7 +87,7 @@ class PrintConversationTest(unittest.TestCase):
         )
         self._dialog = QDialog()
 
-        def _dialog_constructor(source: Source) -> QDialog:
+        def _dialog_constructor(printer: Printer, file_name: str) -> QDialog:
             return self._dialog
 
         def _print_conversation_template(path: Path) -> None:
