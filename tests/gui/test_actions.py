@@ -79,7 +79,7 @@ class DeleteConversationTest(unittest.TestCase):
 class PrintConversationTest(unittest.TestCase):
     def setUp(self):
         self._source = factory.Source()
-        _menu = QMenu()
+        self._menu = QMenu()
         self._controller = MagicMock(Controller, api=True, data_dir="/data")
         self._app_state = MagicMock(
             state.State, selected_conversation=state.ConversationId("some_conversation")
@@ -96,7 +96,7 @@ class PrintConversationTest(unittest.TestCase):
 
         self.action = actions.PrintConversation(
             self._source,
-            _menu,
+            self._menu,
             self._controller,
             self._print_conversation,
             _dialog_constructor,
