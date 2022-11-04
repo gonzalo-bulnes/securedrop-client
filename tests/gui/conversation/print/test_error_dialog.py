@@ -7,7 +7,7 @@ from tests.helper import app
 
 
 class TestErrorDialog(unittest.TestCase):
-    @unittest.skip("TODO: the dialog text should include header")
+    @unittest.skip("TODO: the dialog text should include its header's text")
     def test_displays_which_file_was_not_printed(self):
         file_name = "little_bird/conversation.txt"
         reason = "printer unavailable"
