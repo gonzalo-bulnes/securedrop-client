@@ -6,41 +6,6 @@ from securedrop_client import export
 from securedrop_client.logic import Controller
 
 
-class ExportServiceConnector(QObject):
-    """Connect a printer to the export service in a thread-safe way."""
-
-    _printer_start_requested = pyqtSignal()
-    _job_enqueuing_requested = pyqtSignal(list)
-
-    def __init__(self, printer: "Printer", service: export.Service) -> None:
-        super().__init__()
-
-        # Command signals. Signals are thread-safe, and this allows
-        # the service to run in a different thread. They represent events,
-        # but arguably are a constuction to send commands.
-        service.connect_signals(
-            print_preflight_check_requested=self._printer_start_requested,
-            print_requested=self._job_enqueuing_requested,
-        )
-
-        # Event signals. These signals are used in the canonical way,
-        # the service broadcasts events that the printer consumes.
-        service.printer_preflight_failure.connect(printer._on_printer_not_found_ready)
-        service.printer_preflight_success.connect(printer._on_printer_found_ready)
-        service.print_call_failure.connect(printer._on_job_enqueuing_failed)
-        service.print_call_success.connect(printer._on_job_enqueued)
-
-    @pyqtSlot()
-    def _start(self) -> None:
-        """Ensure the physical printer is ready."""
-        self._printer_start_requested.emit()
-
-    @pyqtSlot(str, str)
-    def _enqueue_job(self, id: str, file_name: str) -> None:
-        """Send a printing job to the print queue."""
-        self._job_enqueuing_requested.emit([file_name])
-
-
 class Printer(QObject):
 
     status_changed = pyqtSignal()
@@ -58,7 +23,7 @@ class Printer(QObject):
 
         self._status = self.StatusUnknown
 
-        self._printing_service = ExportServiceConnector(self, export_service)
+        self._printing_service = self._ExportServiceConnector(self, export_service)
 
     @property
     def status(self) -> Status:
@@ -93,3 +58,37 @@ class Printer(QObject):
     @pyqtSlot(object)
     def _on_printer_not_found_ready(self, reason: object) -> None:
         self.status = self.StatusUnreachable
+
+    class _ExportServiceConnector(QObject):
+        """Connect a printer to the export service in a thread-safe way."""
+
+        _printer_start_requested = pyqtSignal()
+        _job_enqueuing_requested = pyqtSignal(list)
+
+        def __init__(self, printer: "Printer", service: export.Service) -> None:
+            super().__init__()
+
+            # Command signals. Signals are thread-safe, and this allows
+            # the service to run in a different thread. They represent events,
+            # but arguably are a constuction to send commands.
+            service.connect_signals(
+                print_preflight_check_requested=self._printer_start_requested,
+                print_requested=self._job_enqueuing_requested,
+            )
+
+            # Event signals. These signals are used in the canonical way,
+            # the service broadcasts events that the printer consumes.
+            service.printer_preflight_failure.connect(printer._on_printer_not_found_ready)
+            service.printer_preflight_success.connect(printer._on_printer_found_ready)
+            service.print_call_failure.connect(printer._on_job_enqueuing_failed)
+            service.print_call_success.connect(printer._on_job_enqueued)
+
+        @pyqtSlot()
+        def _start(self) -> None:
+            """Ensure the physical printer is ready."""
+            self._printer_start_requested.emit()
+
+        @pyqtSlot(str, str)
+        def _enqueue_job(self, id: str, file_name: str) -> None:
+            """Send a printing job to the print queue."""
+            self._job_enqueuing_requested.emit([file_name])
