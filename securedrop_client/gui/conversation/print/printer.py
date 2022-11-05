@@ -1,6 +1,6 @@
 from typing import NewType
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
 
 from securedrop_client import export
 from securedrop_client.logic import Controller
@@ -35,9 +35,13 @@ class Printer(QObject):
             self._status = new
             self.status_changed.emit()
 
-    def start_on(self, signal: pyqtSignal) -> None:
-        """Allow printer to be started in a thread-safe manner."""
-        signal.connect(self._printing_service._start)
+    def start_and_watch_on(self, signal: pyqtSignal) -> None:
+        """Allows print queue to be started and its status to be watched regularly, in a thread-safe manner."""  # noqa: E501
+        signal.connect(self._printing_service._start_and_watch)
+
+    def stop_watching_on(self, signal: pyqtSignal) -> None:
+        """Allows to stop watching the print queue status in a thread-safe manner."""
+        signal.connect(self._printing_service._stop_watching)
 
     def enqueue_job_on(self, signal: pyqtSignal) -> None:
         signal.connect(self._printing_service._enqueue_job)
@@ -65,6 +69,8 @@ class Printer(QObject):
         _printer_start_requested = pyqtSignal()
         _job_enqueuing_requested = pyqtSignal(list)
 
+        _DEFAULT_POLLING_DELAY_IN_MILLISECONDS = 3000
+
         def __init__(self, printer: "Printer", service: export.Service) -> None:
             super().__init__()
 
@@ -83,12 +89,37 @@ class Printer(QObject):
             service.print_call_failure.connect(printer._on_job_enqueuing_failed)
             service.print_call_success.connect(printer._on_job_enqueued)
 
+            # Service watch signals. Allow to poll the service,
+            # in order to check its status regularly.
+            service.print_call_failure.connect(self._maybe_schedule_printer_status_check)
+            service.print_call_success.connect(self._maybe_schedule_printer_status_check)
+
+            # Service watch configuration.
+            self._currently_polling = False
+            self._polling_delay = self._DEFAULT_POLLING_DELAY_IN_MILLISECONDS
+
         @pyqtSlot()
-        def _start(self) -> None:
-            """Ensure the physical printer is ready."""
+        def _start_and_watch(self) -> None:
+            """Ensure the print queue is ready and watch its status regularly."""
             self._printer_start_requested.emit()
+            self._schedule_printer_status_check()
+            self._currently_polling = True
+
+        @pyqtSlot()
+        def _stop_watching(self) -> None:
+            """Stop watching the print queue status."""
+            self._currently_polling = False
 
         @pyqtSlot(str, str)
         def _enqueue_job(self, id: str, file_name: str) -> None:
             """Send a printing job to the print queue."""
             self._job_enqueuing_requested.emit([file_name])
+
+        @pyqtSlot()
+        def _maybe_schedule_printer_status_check(self) -> None:
+            if self._currently_polling:
+                self._schedule_printer_status_check(self._polling_delay)
+
+        def _schedule_printer_status_check(self, delay_in_milliseconds: int = 0) -> None:
+            # Starting the printing pipeline and checking its status are effectively the same.
+            QTimer.singleShot(delay_in_milliseconds, self._printer_start_requested.emit)

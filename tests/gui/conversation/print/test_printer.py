@@ -49,7 +49,7 @@ class TestPrinterPublicAPI(unittest.TestCase):
         self.assertEqual(len(printer_status_changed_emissions), 3)
 
     @patch.object(export.Service, "run_printer_preflight")
-    def test_start_on_allows_to_run_preflight_checks_on_arbitrary_signal(self, _):
+    def test_start_and_watch_on_allows_to_run_preflight_checks_on_arbitrary_signal(self, _):
         controller = MagicMock(spec=Controller)
         export_service = export.Service()
         printer = Printer(controller, export_service)
@@ -60,6 +60,8 @@ class TestPrinterPublicAPI(unittest.TestCase):
         example.signal.emit()
 
         export_service.run_printer_preflight.assert_called_once()
+
+        # TODO test that a new check is performed after the first one is finished + delay.
 
     @patch.object(export.Service, "print")
     def test_enqueue_job_on_allows_to_run_preflight_checks_on_arbitrary_signal(self, _):
