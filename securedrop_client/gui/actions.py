@@ -162,6 +162,8 @@ class PrintConversation(QAction):
         self._create_confirmation_dialog = confirmation_dialog
         self._printing_job_id = self._source.journalist_designation
 
+        self.setShortcut(Qt.CTRL + Qt.Key_P)
+
         self._printer.job_failed.connect(self._on_printing_job_failed)
         self._printer.job_done.connect(self._on_printing_job_done)
         self.triggered.connect(self.trigger)
