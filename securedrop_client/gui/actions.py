@@ -166,7 +166,7 @@ class PrintConversation(QAction):
         self._printer.job_done.connect(self._on_printing_job_done)
         self.triggered.connect(self.trigger)
 
-        self._printer.start_on(self.printer_start_requested)
+        self._printer.start_and_watch_on(self.printer_start_requested)
         self._printer.enqueue_job_on(self.printer_job_enqueued)
 
     @pyqtSlot()
