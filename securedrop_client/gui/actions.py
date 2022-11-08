@@ -143,6 +143,8 @@ class PrintConversation(QAction):
     printer_start_requested = pyqtSignal()
     printer_job_enqueued = pyqtSignal(str, str)
 
+    _SUPPORT_FOR_CONCURRENT_PRINTING_JOBS_ENABLED = False
+
     def __init__(
         self,
         source: Source,
@@ -161,6 +163,7 @@ class PrintConversation(QAction):
         self._create_error_dialog = error_dialog
         self._create_confirmation_dialog = confirmation_dialog
         self._printing_job_id = self._source.journalist_designation
+        self._printing_job_failure_notification_in_progress = False
 
         self.setShortcut(Qt.CTRL + Qt.Key_P)
 
@@ -171,6 +174,7 @@ class PrintConversation(QAction):
         self._printer.start_and_watch_on(self.printer_start_requested)
         self._printer.enqueue_job_on(self.printer_job_enqueued)
         self._printer.stop_watching_on(self.printer_job_enqueued)
+        self._printer.stop_watching_on(self._printer.job_failed)
 
     @pyqtSlot()
     def trigger(self) -> None:
@@ -199,29 +203,34 @@ class PrintConversation(QAction):
 
     @pyqtSlot(str)
     def _on_printing_job_done(self, job_id: str) -> None:
-        print(f"Received success signal ({job_id})")
-        if job_id != self._printing_job_id:
-            print("Skipped")
+        if self._SUPPORT_FOR_CONCURRENT_PRINTING_JOBS_ENABLED and job_id != self._printing_job_id:
             return
 
         self.setEnabled(True)
 
     @pyqtSlot(str, str)
     def _on_printing_job_failed(self, job_id: str, reason: str) -> None:
-        print(f"Received failure signal ({job_id})")
-        if job_id != self._printing_job_id:
-            print("Skipped")
+        if self._SUPPORT_FOR_CONCURRENT_PRINTING_JOBS_ENABLED and job_id != self._printing_job_id:
             return
 
-        self._error_dialog = self._create_error_dialog(job_id, reason)
-        self._error_dialog.finished.connect(self._on_error_dialog_finished)
-        self._printer.stop_watching_on(self._error_dialog.finished)
-        self._error_dialog.show()
+
+        # The lack of meaningful job_id means we can only print one conversation at a time.
+        # Enabling _SUPPORT_FOR_CONCURRENT_PRINTING_JOBS_ENABLED removes the need for the following
+        # flag, but requires the export service to associate a job_id to its responses.
+        # Note that such job_id can (and should) be opaque to the export service.
+        if not self._printing_job_failure_notification_in_progress:
+            self._printing_job_failure_notification_in_progress = True
+
+            self._error_dialog = self._create_error_dialog(job_id, reason)
+            self._error_dialog.finished.connect(self._on_error_dialog_finished)
+            self._printer.stop_watching_on(self._error_dialog.finished)
+            self._error_dialog.show()
 
     @pyqtSlot(int)
     def _on_error_dialog_finished(self, _result: int) -> None:
         self.setEnabled(True)
         self._error_dialog.deleteLater()
+        self._printing_job_failure_notification_in_progress = False
 
     def _start_printer(self) -> None:
         """Start the printer in a thread-safe manner."""
