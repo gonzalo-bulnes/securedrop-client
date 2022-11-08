@@ -2953,11 +2953,8 @@ class SourceConversationWrapper(QWidget):
         export_device = conversation.ExportDevice(controller, export_service)
         printer = conversation.Printer(controller, export_service)
 
-        def print_conversation(path: Path) -> None:
-            export_device.print_requested.emit([str(path)])  # pragma: nocover
-
         self.conversation_title_bar = SourceProfileShortWidget(
-            source, controller, app_state, printer, print_conversation
+            source, controller, app_state, printer
         )
         self.conversation_view = ConversationView(source, controller, export_device)
         self.reply_box = ReplyBoxWidget(source, controller)
