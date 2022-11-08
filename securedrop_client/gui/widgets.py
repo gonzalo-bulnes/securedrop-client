@@ -3496,7 +3496,7 @@ class SourceProfileShortWidget(QWidget):
         title = TitleLabel(self.source.journalist_designation)
         self.updated = LastUpdatedLabel(_(arrow.get(self.source.last_updated).format("MMM D")))
         menu = SourceMenuButton(
-            self.source, self.controller, app_state, printer, print_conversation
+            self.source, self.controller, app_state, printer
         )
         header_layout.addWidget(title, alignment=Qt.AlignLeft)
         header_layout.addStretch()
