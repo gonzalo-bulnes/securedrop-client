@@ -2947,7 +2947,7 @@ class SourceConversationWrapper(QWidget):
         if export_service is None:
             # Note that injecting an export service that runs in a separate
             # thread is greatly encouraged! But it is optional because strictly
-            # speaking it is not a dependency of this FileWidget.
+            # speaking it is not a dependency of this SourceConversationWrapper.
             export_service = export.Service()
 
         export_device = conversation.ExportDevice(controller, export_service)
