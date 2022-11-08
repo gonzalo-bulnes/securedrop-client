@@ -20,8 +20,7 @@ import html
 import logging
 from datetime import datetime
 from gettext import gettext as _
-from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 from uuid import uuid4
 
 import arrow
@@ -3495,9 +3494,7 @@ class SourceProfileShortWidget(QWidget):
         )
         title = TitleLabel(self.source.journalist_designation)
         self.updated = LastUpdatedLabel(_(arrow.get(self.source.last_updated).format("MMM D")))
-        menu = SourceMenuButton(
-            self.source, self.controller, app_state, printer
-        )
+        menu = SourceMenuButton(self.source, self.controller, app_state, printer)
         header_layout.addWidget(title, alignment=Qt.AlignLeft)
         header_layout.addStretch()
         header_layout.addWidget(self.updated, alignment=Qt.AlignRight)

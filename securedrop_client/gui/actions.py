@@ -213,7 +213,6 @@ class PrintConversation(QAction):
         if self._SUPPORT_FOR_CONCURRENT_PRINTING_JOBS_ENABLED and job_id != self._printing_job_id:
             return
 
-
         # The lack of meaningful job_id means we can only print one conversation at a time.
         # Enabling _SUPPORT_FOR_CONCURRENT_PRINTING_JOBS_ENABLED removes the need for the following
         # flag, but requires the export service to associate a job_id to its responses.
