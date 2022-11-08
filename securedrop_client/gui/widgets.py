@@ -3427,7 +3427,7 @@ class SourceMenuButton(QToolButton):
         self.setIcon(load_icon("ellipsis.svg"))
         self.setIconSize(QSize(22, 33))  # Make it taller than the svg viewBox to increase hitbox
 
-        self.menu = SourceMenu(self.source, self.controller, app_state, printer, print_conversation)
+        self.menu = SourceMenu(self.source, self.controller, app_state, printer)
         self.setMenu(self.menu)
 
         self.setPopupMode(QToolButton.InstantPopup)
