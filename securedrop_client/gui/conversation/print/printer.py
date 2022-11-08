@@ -64,7 +64,7 @@ class Printer(QObject):
         self.status = self.StatusUnreachable
 
     class _ExportServiceConnector(QObject):
-        """Connect a printer to the export service in a thread-safe way."""
+        """Enable a printer to watch the export service (via polling) in a thread-safe way."""
 
         _printer_start_requested = pyqtSignal()
         _job_enqueuing_requested = pyqtSignal(list)
