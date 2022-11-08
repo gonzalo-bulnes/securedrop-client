@@ -170,6 +170,7 @@ class PrintConversation(QAction):
 
         self._printer.start_and_watch_on(self.printer_start_requested)
         self._printer.enqueue_job_on(self.printer_job_enqueued)
+        self._printer.stop_watching_on(self.printer_job_enqueued)
 
     @pyqtSlot()
     def trigger(self) -> None:
@@ -182,6 +183,7 @@ class PrintConversation(QAction):
             )
             self._confirmation_dialog.accepted.connect(self._on_confirmation_dialog_accepted)
             self._confirmation_dialog.rejected.connect(self._on_confirmation_dialog_rejected)
+            self._printer.stop_watching_on(self._confirmation_dialog.rejected)
             self._confirmation_dialog.show()
 
     @pyqtSlot()
@@ -213,6 +215,7 @@ class PrintConversation(QAction):
 
         self._error_dialog = self._create_error_dialog(job_id, reason)
         self._error_dialog.finished.connect(self._on_error_dialog_finished)
+        self._printer.stop_watching_on(self._error_dialog.finished)
         self._error_dialog.show()
 
     @pyqtSlot(int)

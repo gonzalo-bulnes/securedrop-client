@@ -91,8 +91,8 @@ class Printer(QObject):
 
             # Service watch signals. Allow to poll the service,
             # in order to check its status regularly.
-            service.print_call_failure.connect(self._maybe_schedule_printer_status_check)
-            service.print_call_success.connect(self._maybe_schedule_printer_status_check)
+            service.printer_preflight_failure.connect(self._maybe_schedule_printer_status_check)
+            service.printer_preflight_success.connect(self._maybe_schedule_printer_status_check)
 
             # Service watch configuration.
             self._currently_polling = False
