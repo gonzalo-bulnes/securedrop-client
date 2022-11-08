@@ -3417,7 +3417,6 @@ class SourceMenuButton(QToolButton):
         controller: Controller,
         app_state: Optional[state.State],
         printer: conversation.Printer,
-        print_conversation: Callable[[Path], None] = lambda path: None,
     ) -> None:
         super().__init__()
         self.controller = controller
