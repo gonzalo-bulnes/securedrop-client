@@ -55,7 +55,7 @@ class TestPrinterPublicAPI(unittest.TestCase):
         printer = Printer(controller, export_service)
 
         example = Consumer()
-        printer.start_on(example.signal)
+        printer.start_and_watch_on(example.signal)
 
         example.signal.emit()
 
